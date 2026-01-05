@@ -156,7 +156,9 @@ function doGet(e) {
 
     var page = e.parameter.page || 'index';
     var action = e.parameter.action;
-    var faviconUrl = "https://www.cahyamata.com/wp-content/uploads/2015/02/Cahya-Mata-logo_CMYK.jpg";
+
+    // Use Google's favicon service (automatically gets PNG format)
+    var faviconUrl = "https://www.google.com/s2/favicons?domain=cahyamata.com&sz=128";
 
     // Handle email action links (recommend/reject)
     if (action && action.indexOf('_recommend') > -1 || action && action.indexOf('_reject') > -1) {
