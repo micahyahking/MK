@@ -2858,7 +2858,7 @@ function sendGCCApprovalEmail(requestId, data, csrComments) {
                     encodeURIComponent(requestId);
 
     // Format SDG goals if they exist
-    var sdgGoalsRaw = data[46] || "[]";  // AW: SDG Goals (column 47, index 46)
+    var sdgGoalsRaw = data[48] || "[]";  // AW: SDG Goals (index 48)
     var sdgGoals = "None specified";
     try {
       var sdgArray = JSON.parse(sdgGoalsRaw);
@@ -2885,9 +2885,9 @@ function sendGCCApprovalEmail(requestId, data, csrComments) {
       PAYEE_NAME: data[20] || "N/A",       // U: Payee Name
       PAYEE_BANK: data[21] || "N/A",       // V: Payee Bank
       PAYEE_ACCOUNT: data[22] || "N/A",    // W: Payee Account
-      BENEFICIARY_COUNT: data[48] || "N/A", // AY: Beneficiary Count (column 49, index 48)
-      GEOGRAPHIC_AREA: data[49] || "N/A",   // AZ: Geographic Area (column 50, index 49)
-      DURATION: data[50] || "N/A",         // BA: Duration (column 51, index 50)
+      BENEFICIARY_COUNT: data[50] || "N/A", // AY: Beneficiary Count (index 50)
+      GEOGRAPHIC_AREA: data[51] || "N/A",   // AZ: Geographic Area (index 51)
+      DURATION: data[52] || "N/A",         // BA: Duration (index 52)
       SDG_GOALS: sdgGoals,
       CSR_COMMENTS: csrComments || "No comments provided",
       RECOMMEND_URL: recommendUrl,
@@ -3307,7 +3307,7 @@ function sendGMDNotificationEmail(requestId, data, signedPdfUrl) {
       EVENT_NAME: data[12] || "N/A",
       EVENT_DATE: data[13] || "TBD",
       EVENT_LOCATION: data[14] || "N/A",
-      BENEFICIARY_COUNT: data[48] || "N/A",
+      BENEFICIARY_COUNT: data[50] || "N/A",  // Fixed: AY is index 50, not 48
       APPROVAL_DATE: new Date().toLocaleDateString(),
       SIGNED_PDF_URL: signedPdfUrl
     });
