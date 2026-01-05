@@ -5058,35 +5058,26 @@ function generateApprovalPDF(requestId, data) {
     // Title
     appendHeading_(body, "CSR DONATION & SPONSORSHIP REQUEST", H_FONT, H_FALLBACK, 14, "#146c43", true);
 
-    // Sections (each helper only adds non-empty rows)
+    // REQUESTOR Section (matching user's sample)
     sectionTwoCol_(body, "REQUESTOR", [
-      ["Entity Type", data[11]]
+      ["Entity Type",     data[11] || "Organization"],          // L: Request Type
+      [data[11] || "Request Type",  ""]                        // Show request type as field name
     ], H_FONT, H_FALLBACK);
 
+    // EVENT Section (matching user's sample)
     sectionTwoCol_(body, "EVENT", [
-      ["Contact",         data[6] || data[3]],
-      ["Designation",     data[5]],
-      ["Event Name",      data[12]],
-      ["Event Date",      data[13]],
-      ["Event Location",  data[14]],
-      ["Focus Area",      data[15]],
-      ["Description",     data[16]]
+      ["Contact",         data[6] || data[3]],                 // G: Requester Name
+      ["Designation",     data[9] || data[5]],                 // J: Organization Name
+      ["Description",     data[33] || data[30] || data[19]]    // AH: GCC Comments / AE: CSR Comments / T: Purpose
     ], H_FONT, H_FALLBACK);
 
+    // FINANCIAL Section (matching user's sample)
     if (isMonetary) {
       sectionTwoCol_(body, "FINANCIAL", [
-        ["Amount",         formatCurrency(amount)],
-        ["Request Type",   "Donation/Sponsorship"],
-        ["Bank",           data[21]],
-        ["Account No",     data[22]],
-        ["Account Name",   data[20]]
+        ["Amount",         formatCurrency(amount)],            // S: Amount
+        ["Request Type",   data[11] || "Donation/Sponsorship"] // L: Request Type
       ], H_FONT, H_FALLBACK);
     }
-
-    // GCC review block
-    sectionFreeText_(body, "REVIEWS", [
-      ["GCC", (data[30] ? ("GCC Team Remark: " + data[30]) : "") + (data[33] ? (" | Head: " + data[33]) : "")]
-    ], H_FONT, H_FALLBACK);
 
     // Approvals table with ample spacing for signatures
     sectionSignatures_(body, "APPROVALS", [
