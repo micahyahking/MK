@@ -1,0 +1,3037 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CSR Management System · Cahya Mata Sarawak Group</title>
+
+    <style>
+        /******************************************************************
+         * GLOBAL VISUAL LANGUAGE
+         * World-class UI for CSR + ESG + SDG Governance
+         * Futuristic glass / gradient / sustainability palette
+         ******************************************************************/
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-green: #00b894;
+            --primary-blue: #0984e3;
+            --secondary-green: #00cec9;
+            --accent-gold: #fdcb6e;
+            --danger-red: #e17055;
+
+            --surface-deep: rgba(13, 23, 33, 0.6);
+            --surface-card: rgba(255, 255, 255, 0.08);
+            --surface-card-strong: rgba(255, 255, 255, 0.12);
+
+            --text-strong: rgba(255,255,255,0.95);
+            --text-mid: rgba(255,255,255,0.8);
+            --text-dim: rgba(255,255,255,0.6);
+
+            --gradient-primary: radial-gradient(circle at 20% 20%, #00b894 0%, #0984e3 40%, #6c5ce7 80%);
+            --gradient-secondary: linear-gradient(45deg, #00cec9 0%, #fdcb6e 100%);
+            --gradient-card: linear-gradient(145deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.05) 100%);
+            --gradient-focus: radial-gradient(circle at 10% 0%, rgba(0,206,201,0.3) 0%, rgba(0,0,0,0) 70%);
+
+            --glass-bg: rgba(255,255,255,0.08);
+            --glass-stroke: rgba(255,255,255,0.18);
+        }
+
+        body {
+            font-family: "Inter", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            min-height: 100vh;
+            background: var(--gradient-primary);
+            background-attachment: fixed;
+            color: var(--text-strong);
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /******************************************************************
+         * Animated ambient particles
+         ******************************************************************/
+        .particles-bg {
+            position: fixed;
+            z-index: -1;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0) 70%);
+            filter: blur(20px);
+            border-radius: 50%;
+            opacity: 0.15;
+            animation: float 8s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%,100% { transform: translateY(0px) rotate(0deg) scale(1); }
+            50%     { transform: translateY(-25px) rotate(20deg) scale(1.1); }
+        }
+
+        .particle:nth-child(1){ width:140px; height:140px; left:8%;  top:20%;  animation-delay:0s;}
+        .particle:nth-child(2){ width:220px; height:220px; left:18%; top:60%;  animation-delay:1s;}
+        .particle:nth-child(3){ width:160px; height:160px; left:40%; top:15%;  animation-delay:2.5s;}
+        .particle:nth-child(4){ width:200px; height:200px; left:58%; top:70%;  animation-delay:3.2s;}
+        .particle:nth-child(5){ width:180px; height:180px; left:75%; top:30%;  animation-delay:4.4s;}
+        .particle:nth-child(6){ width:140px; height:140px; left:82%; top:75%;  animation-delay:5.6s;}
+
+        /******************************************************************
+         * Core layout wrappers
+         ******************************************************************/
+        .main-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-stroke);
+            border-radius: 24px;
+            box-shadow:
+                0 30px 120px rgba(0,0,0,0.6),
+                0 2px 4px rgba(255,255,255,0.08) inset;
+        }
+
+        .glass-card:hover {
+            box-shadow:
+                0 40px 140px rgba(0,0,0,0.7),
+                0 2px 4px rgba(255,255,255,0.12) inset;
+            transform: translateY(-2px);
+            transition: all .25s ease;
+        }
+
+        /******************************************************************
+         * Header / branding strip
+         ******************************************************************/
+        .header-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 32px 24px;
+            text-align: center;
+            position: relative;
+            background: var(--gradient-card);
+        }
+
+        .header-accent-ring {
+            position: absolute;
+            inset: 0;
+            border-radius: 24px;
+            background: radial-gradient(circle at 50% 0%, rgba(253,203,110,0.2) 0%, rgba(0,0,0,0) 70%);
+            mix-blend-mode: screen;
+            pointer-events: none;
+        }
+
+        .logo {
+            max-height: 70px;
+            margin-bottom: 16px;
+            filter: drop-shadow(0 8px 16px rgba(0,0,0,0.6));
+            border-radius: 8px;
+            background: rgba(0,0,0,0.3);
+            padding: 8px 12px;
+        }
+
+        .title {
+            font-size: 2rem;
+            font-weight: 600;
+            line-height: 1.2;
+            background: linear-gradient(90deg,#fff,#d9fff6 60%,#cde9ff 100%);
+            -webkit-background-clip: text;
+            color: transparent;
+            margin-bottom: 6px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.6);
+        }
+
+        .subtitle {
+            font-size: .95rem;
+            font-weight: 400;
+            color: var(--text-mid);
+            max-width: 700px;
+        }
+
+        .subtitle strong {
+            color: var(--text-strong);
+            font-weight: 600;
+        }
+
+        /******************************************************************
+         * Stepper / progress tracker
+         ******************************************************************/
+        .progress-wrapper {
+            margin: 24px 0 32px;
+        }
+
+        .progress-bar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 16px 24px;
+            border-radius: 1000px;
+            background: var(--surface-card);
+            border: 1px solid rgba(255,255,255,0.14);
+            box-shadow: 0 30px 100px rgba(0,0,0,0.6);
+        }
+
+        .progress-step {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 18px;
+            border-radius: 999px;
+            color: var(--text-dim);
+            font-size: .8rem;
+            font-weight: 500;
+            line-height: 1.2;
+            position: relative;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.12);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            min-width: 90px;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .progress-step .step-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            font-size: .75rem;
+            font-weight: 600;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: var(--text-mid);
+        }
+
+        .progress-step.active {
+            background: var(--gradient-secondary);
+            color: #000;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.8), 0 0 30px rgba(0,255,200,0.5);
+        }
+
+        .progress-step.active .step-number {
+            background: rgba(255,255,255,0.9);
+            color: #000;
+            border-color: rgba(0,0,0,0.4);
+        }
+
+        .progress-step.completed {
+            background: var(--primary-green);
+            color: #000;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.8), 0 0 30px rgba(0,255,200,0.4);
+        }
+
+        .progress-step.completed .step-number {
+            background: rgba(0,0,0,0.6);
+            color: #fff;
+            border-color: rgba(0,0,0,0.8);
+        }
+
+        /******************************************************************
+         * Section containers
+         ******************************************************************/
+        .section {
+            display: none;
+            margin-bottom: 32px;
+        }
+
+        .section.active {
+            display: block;
+            animation: slideIn .45s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity:0; transform: translateX(24px) scale(.98); }
+            to   { opacity:1; transform: translateX(0)   scale(1); }
+        }
+
+        .section-card {
+            background: var(--surface-card);
+            border-radius: 24px;
+            border: 1px solid rgba(255,255,255,0.18);
+            padding: 32px;
+            position: relative;
+            box-shadow:
+                0 30px 120px rgba(0,0,0,0.7),
+                0 2px 4px rgba(255,255,255,0.08) inset;
+        }
+
+        .section-headline {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .section-icon {
+            width: 44px;
+            height: 44px;
+            min-width: 44px;
+            min-height: 44px;
+            border-radius: 12px;
+            background: var(--gradient-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+            font-weight: 600;
+            color: #000;
+        }
+
+        .section-title-text {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--text-strong);
+            line-height: 1.3;
+        }
+
+        .section-desc {
+            font-size: .9rem;
+            font-weight: 400;
+            color: var(--text-mid);
+            line-height: 1.5;
+            margin-top: 2px;
+            max-width: 900px;
+        }
+
+        /******************************************************************
+         * Policy viewer / PDF scroll requirement
+         ******************************************************************/
+        .policy-viewer {
+            background: rgba(0,0,0,0.3);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.2);
+            position: relative;
+            overflow: hidden;
+            height: 420px;
+            margin-bottom: 16px;
+            box-shadow:
+                0 24px 80px rgba(0,0,0,0.8),
+                0 2px 4px rgba(255,255,255,0.05) inset;
+        }
+
+        .policy-content {
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            padding: 30px;
+            background: rgba(0,0,0,0.5);
+            color: var(--text-mid);
+            line-height: 1.8;
+        }
+
+        .policy-content h2 {
+            color: var(--text-strong);
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .policy-content h3 {
+            color: var(--primary-green);
+            margin-top: 24px;
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+        }
+
+        .policy-content p {
+            margin-bottom: 12px;
+        }
+
+        .policy-content ul {
+            margin-left: 24px;
+            margin-bottom: 16px;
+        }
+
+        .policy-content li {
+            margin-bottom: 8px;
+        }
+
+        /* Custom scrollbar for policy viewer */
+        .policy-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .policy-content::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.3);
+            border-radius: 4px;
+        }
+
+        .policy-content::-webkit-scrollbar-thumb {
+            background: var(--primary-green);
+            border-radius: 4px;
+        }
+
+        .policy-content::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary-green);
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 12px;
+            right: 12px;
+            background: var(--primary-green);
+            color: #000;
+            font-size: .8rem;
+            font-weight: 600;
+            padding: 8px 12px;
+            border-radius: 20px;
+            display: none;
+            box-shadow:
+                0 10px 30px rgba(0,0,0,0.8),
+                0 0 20px rgba(0,255,170,0.5);
+        }
+
+        .scroll-indicator.show {
+            display: block;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%,100% { opacity:1; }
+            50%     { opacity:.6; }
+        }
+
+        /******************************************************************
+         * Form elements
+         ******************************************************************/
+        .form-grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit,minmax(min(320px,100%),1fr));
+            gap: 20px;
+            width: 100%;
+        }
+
+        .form-group {
+            width: 100%;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .form-label {
+            display: flex;
+            font-size: .8rem;
+            font-weight: 600;
+            color: var(--text-strong);
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .form-hint {
+            color: var(--text-dim);
+            font-size: .75rem;
+            font-weight: 400;
+            line-height: 1.3;
+            margin-left: 6px;
+        }
+
+        .form-input,
+        .form-textarea {
+            width: 100%;
+            padding: 14px 16px 14px 16px;
+            font-size: .9rem;
+            font-weight: 500;
+            line-height: 1.4;
+            color: var(--text-strong);
+            border-radius: 12px;
+            border: 2px solid rgba(255,255,255,0.18);
+            background: rgba(255,255,255,0.07);
+            box-shadow:
+                0 16px 40px rgba(0,0,0,0.8),
+                0 2px 4px rgba(255,255,255,0.06) inset;
+            transition: all .2s ease;
+            outline: none;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Enhanced Select/Dropdown Styling for Dark Theme */
+        .form-select {
+            width: 100%;
+            padding: 14px 44px 14px 16px;
+            font-size: .9rem;
+            font-weight: 500;
+            line-height: 1.4;
+            color: var(--text-strong);
+            border-radius: 12px;
+            border: 2px solid rgba(255,255,255,0.18);
+            background-color: rgba(20, 30, 45, 0.95);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2300cec9' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 20px;
+            box-shadow:
+                0 16px 40px rgba(0,0,0,0.8),
+                0 2px 4px rgba(255,255,255,0.06) inset;
+            transition: all .2s ease;
+            outline: none;
+            cursor: pointer;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        .form-select:hover {
+            border-color: rgba(255,255,255,0.3);
+            background-color: rgba(25, 40, 55, 0.98);
+        }
+
+        /* Dropdown option styling - Dark theme */
+        .form-select option {
+            background-color: #1a2634;
+            color: #ffffff;
+            padding: 14px 16px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .form-select option:hover,
+        .form-select option:focus,
+        .form-select option:checked {
+            background-color: #00b894;
+            color: #000000;
+            font-weight: 600;
+        }
+
+        .form-select option[value=""] {
+            color: rgba(255,255,255,0.5);
+        }
+
+        .form-input[readonly] {
+            opacity: .7;
+            cursor: not-allowed;
+            background: rgba(255,255,255,0.03);
+            border-color: rgba(255,255,255,0.1);
+        }
+
+        .form-select[readonly] {
+            opacity: .7;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .form-input::placeholder,
+        .form-textarea::placeholder {
+            color: var(--text-dim);
+        }
+
+        .form-input:focus,
+        .form-textarea:focus {
+            border-color: var(--secondary-green);
+            box-shadow:
+                0 24px 60px rgba(0,0,0,0.9),
+                0 0 30px rgba(0,255,200,0.4),
+                0 2px 4px rgba(255,255,255,0.1) inset;
+            transform: translateY(-1px) scale(1.01);
+            background: rgba(255,255,255,0.1);
+        }
+
+        .form-select:focus {
+            border-color: var(--secondary-green);
+            background-color: rgba(25, 45, 60, 0.98);
+            box-shadow:
+                0 24px 60px rgba(0,0,0,0.9),
+                0 0 30px rgba(0,255,200,0.4),
+                0 2px 4px rgba(255,255,255,0.1) inset;
+            transform: translateY(-1px) scale(1.01);
+        }
+
+        .form-textarea {
+            min-height: 110px;
+            resize: vertical;
+        }
+
+        /******************************************************************
+         * Checklist
+         ******************************************************************/
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit,minmax(min(320px,100%),1fr));
+            gap: 16px;
+            margin: 16px 0 24px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            background: rgba(255,255,255,0.06);
+            border-radius: 14px;
+            padding: 16px 16px 14px;
+            border: 1px solid rgba(255,255,255,0.14);
+            box-shadow:
+                0 20px 60px rgba(0,0,0,0.8),
+                0 2px 4px rgba(255,255,255,0.05) inset;
+            cursor: pointer;
+            transition: .2s;
+        }
+
+        .checkbox-item:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateY(-2px);
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin-top: 3px;
+            accent-color: var(--primary-green);
+            cursor: pointer;
+        }
+
+        .checkbox-item span {
+            font-size: .85rem;
+            line-height: 1.4;
+            color: var(--text-mid);
+            font-weight: 500;
+        }
+
+        /******************************************************************
+         * Dynamic tables (History, Donation Items)
+         ******************************************************************/
+        .table-shell {
+            width: 100%;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.18);
+            background: rgba(0,0,0,0.3);
+            box-shadow:
+                0 30px 100px rgba(0,0,0,0.9),
+                0 2px 4px rgba(255,255,255,0.06) inset;
+        }
+
+        table.data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: .8rem;
+        }
+
+        .data-table thead th {
+            background: rgba(255,255,255,0.1);
+            color: var(--text-strong);
+            font-weight: 600;
+            text-align: left;
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.18);
+        }
+
+        .data-table tbody td {
+            color: var(--text-mid);
+            padding: 14px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            vertical-align: top;
+        }
+
+        .data-table tfoot td {
+            background: rgba(255,255,255,0.07);
+            font-weight: 600;
+            color: var(--text-strong);
+            padding: 14px 16px;
+            border-top: 1px solid rgba(255,255,255,0.18);
+        }
+
+        .row-action-btn {
+            font-size: .75rem;
+            font-weight: 600;
+            background: var(--danger-red);
+            border: none;
+            border-radius: 8px;
+            padding: 8px 10px;
+            color: #fff;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(225,112,85,0.6);
+        }
+
+        /******************************************************************
+         * Chips / SDG selectors / focus tags
+         ******************************************************************/
+        .focus-area-tags,
+        .sdg-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .focus-area-tag,
+        .sdg-tag {
+            background: var(--surface-card-strong);
+            border-radius: 999px;
+            padding: 8px 14px;
+            border: 2px solid transparent;
+            font-size: .75rem;
+            font-weight: 600;
+            color: var(--text-strong);
+            cursor: pointer;
+            box-shadow:
+                0 18px 50px rgba(0,0,0,0.9),
+                0 0 30px rgba(0,255,200,0.2);
+            transition: .18s;
+        }
+
+        .focus-area-tag:hover,
+        .sdg-tag:hover {
+            transform: translateY(-2px) scale(1.03);
+            box-shadow:
+                0 30px 80px rgba(0,0,0,0.9),
+                0 0 30px rgba(0,255,200,0.4);
+        }
+
+        .focus-area-tag.selected,
+        .sdg-tag.selected {
+            background: var(--primary-green);
+            color: #000;
+            border-color: rgba(0,0,0,0.5);
+            text-shadow: 0 0 8px rgba(0,0,0,0.6);
+            box-shadow:
+                0 30px 100px rgba(0,0,0,0.9),
+                0 0 40px rgba(0,255,170,0.5);
+        }
+
+        .sdg-legend {
+            font-size: .7rem;
+            line-height: 1.4;
+            color: var(--text-dim);
+            margin-top: 8px;
+        }
+
+        /******************************************************************
+         * Amount display / highlights
+         ******************************************************************/
+        .amount-display {
+            font-size: 1.4rem;
+            font-weight: 700;
+            text-align: center;
+            line-height: 1.3;
+            padding: 16px;
+            border-radius: 16px;
+            color: var(--accent-gold);
+            background: rgba(253,203,110,0.08);
+            border: 2px solid rgba(253,203,110,0.3);
+            box-shadow:
+                0 24px 80px rgba(0,0,0,0.9),
+                0 0 40px rgba(253,203,110,0.3),
+                0 2px 4px rgba(255,255,255,0.07) inset;
+        }
+
+        /******************************************************************
+         * Buttons & button rows
+         ******************************************************************/
+        .button-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            justify-content: space-between;
+            margin-top: 32px;
+        }
+
+        .button-row .btn {
+            flex: 1 1 auto;
+            min-width: 180px;
+        }
+
+        .btn {
+            position: relative;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 18px;
+            border-radius: 14px;
+            border: none;
+            font-size: .9rem;
+            line-height: 1.2;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            background: rgba(255,255,255,0.08);
+            color: var(--text-strong);
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow:
+                0 20px 60px rgba(0,0,0,0.9),
+                0 2px 4px rgba(255,255,255,0.07) inset;
+            overflow: hidden;
+            transition: all .18s ease;
+        }
+
+        .btn:before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 70%);
+            opacity: 0;
+            transition: opacity .3s ease;
+        }
+
+        .btn:hover:before {
+            opacity: .4;
+        }
+
+        .btn-primary {
+            background: var(--gradient-secondary);
+            color: #000;
+            border: 1px solid rgba(0,0,0,0.4);
+            box-shadow:
+                0 30px 100px rgba(0,0,0,0.9),
+                0 0 40px rgba(0,255,200,0.5),
+                0 2px 4px rgba(255,255,255,0.07) inset;
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.07);
+        }
+
+        .btn-danger {
+            background: var(--danger-red);
+            color: #fff;
+            border: 1px solid rgba(0,0,0,0.6);
+            box-shadow: 0 30px 80px rgba(225,112,85,0.9);
+        }
+
+        .btn-success {
+            background: var(--primary-green);
+            color: #000;
+            border: 1px solid rgba(0,0,0,0.5);
+            box-shadow:
+                0 30px 80px rgba(0,0,0,0.9),
+                0 0 40px rgba(0,255,170,0.5),
+                0 2px 4px rgba(255,255,255,0.08) inset;
+        }
+
+        .btn:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            filter: grayscale(0.5);
+            transform: none !important;
+        }
+
+        .btn:disabled:hover {
+            transform: none !important;
+        }
+
+        .btn:disabled:before {
+            display: none;
+        }
+
+        /* Better hover states for buttons */
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            box-shadow:
+                0 35px 110px rgba(0,0,0,0.95),
+                0 0 50px rgba(0,255,200,0.6),
+                0 2px 4px rgba(255,255,255,0.1) inset;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            box-shadow:
+                0 35px 100px rgba(0,0,0,0.95),
+                0 0 50px rgba(0,255,170,0.6),
+                0 2px 4px rgba(255,255,255,0.1) inset;
+        }
+
+        /******************************************************************
+         * Upload blocks
+         ******************************************************************/
+        .file-upload {
+            width: 100%;
+            position: relative;
+        }
+
+        .file-upload input[type="file"] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-upload-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 20px;
+            border-radius: 16px;
+            border: 2px dashed rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.05);
+            color: var(--text-strong);
+            font-weight: 500;
+            font-size: .85rem;
+            text-align: center;
+            cursor: pointer;
+            min-height: 80px;
+            line-height: 1.4;
+            box-shadow:
+                0 30px 100px rgba(0,0,0,0.9),
+                0 2px 4px rgba(255,255,255,0.05) inset;
+            transition: all .2s;
+        }
+
+        .file-upload-label:hover {
+            border-color: var(--secondary-green);
+            background: rgba(255,255,255,0.08);
+            box-shadow:
+                0 40px 120px rgba(0,0,0,0.9),
+                0 0 40px rgba(0,255,200,0.4),
+                0 2px 4px rgba(255,255,255,0.08) inset;
+        }
+
+        .file-upload.has-file .file-upload-label {
+            border-color: var(--primary-green);
+            border-style: solid;
+            background: rgba(0,184,148,0.15);
+            color: var(--text-strong);
+            box-shadow:
+                0 40px 120px rgba(0,0,0,0.9),
+                0 0 50px rgba(0,255,170,0.5),
+                0 2px 4px rgba(255,255,255,0.08) inset;
+        }
+
+        /******************************************************************
+         * Status / messages / loaders
+         ******************************************************************/
+        .loading-block {
+            display: none;
+            text-align: center;
+            padding: 32px 16px;
+            color: var(--text-mid);
+        }
+
+        .loading-block.show {
+            display: block;
+        }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid var(--primary-green);
+            margin: 0 auto 16px;
+            animation: spin 1s linear infinite;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.9), 0 0 40px rgba(0,255,170,0.4);
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .alert-block {
+            display: none;
+            margin: 20px 0;
+            border-radius: 16px;
+            padding: 16px 20px;
+            font-size: .85rem;
+            line-height: 1.4;
+            font-weight: 500;
+            box-shadow:
+                0 30px 100px rgba(0,0,0,0.9),
+                0 2px 4px rgba(255,255,255,0.08) inset;
+        }
+
+        .alert-block.show {
+            display: block;
+            animation: slideIn .4s ease-out;
+        }
+
+        .alert-success {
+            background: var(--primary-green);
+            border: 1px solid rgba(0,0,0,0.5);
+            color: #000;
+        }
+
+        .alert-error {
+            background: var(--danger-red);
+            border: 1px solid rgba(0,0,0,0.6);
+            color: #fff;
+        }
+
+        /******************************************************************
+         * Preview summary card
+         ******************************************************************/
+        .preview-shell {
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.18);
+            padding: 24px;
+            box-shadow:
+                0 30px 100px rgba(0,0,0,0.9),
+                0 2px 4px rgba(255,255,255,0.06) inset;
+        }
+
+        .preview-block {
+            display: grid;
+            grid-template-columns: repeat(auto-fit,minmax(min(320px,100%),1fr));
+            gap: 24px;
+        }
+
+        .preview-section-title {
+            font-size: .9rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .preview-line {
+            font-size: .8rem;
+            line-height: 1.4;
+            color: var(--text-mid);
+        }
+
+        .preview-line strong {
+            color: var(--text-strong);
+            font-weight: 600;
+        }
+
+        .highlight-badge {
+            margin-top: 16px;
+            border-radius: 12px;
+            padding: 16px;
+            background: rgba(0,184,148,0.15);
+            border: 1px solid rgba(0,0,0,0.5);
+            color: var(--text-strong);
+            font-size: .8rem;
+            line-height: 1.5;
+            box-shadow:
+                0 30px 100px rgba(0,0,0,0.9),
+                0 0 40px rgba(0,255,170,0.4),
+                0 2px 4px rgba(255,255,255,0.07) inset;
+        }
+
+        /******************************************************************
+         * Success page
+         ******************************************************************/
+        .success-wrapper {
+            text-align: center;
+            color: var(--text-strong);
+        }
+
+        .success-emoji {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            text-shadow: 0 20px 60px rgba(0,0,0,0.8);
+        }
+
+        .success-headline {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-green);
+            text-shadow: 0 0 30px rgba(0,255,170,0.6);
+            margin-bottom: 12px;
+        }
+
+        .success-details {
+            font-size: .9rem;
+            font-weight: 400;
+            line-height: 1.5;
+            color: var(--text-mid);
+            max-width: 480px;
+            margin: 0 auto 24px;
+        }
+
+        .success-card {
+            border-radius: 20px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.18);
+            padding: 20px;
+            text-align: left;
+            margin: 0 auto 24px;
+            max-width: 480px;
+            font-size: .8rem;
+            box-shadow:
+                0 30px 100px rgba(0,0,0,0.9),
+                0 2px 4px rgba(255,255,255,0.07) inset;
+        }
+
+        /******************************************************************
+         * Responsive tweaks
+         ******************************************************************/
+        @media (max-width:768px) {
+            .main-container { padding:16px; }
+            .title { font-size:1.6rem; }
+            .section-card { padding:24px; border-radius:20px; }
+            .progress-bar { flex-direction:column; align-items:stretch; border-radius:20px; }
+            .progress-step { width:100%; justify-content:flex-start; }
+            .button-row { flex-direction:column; }
+            .btn { width:100%; }
+            
+            .form-select {
+                padding: 12px 40px 12px 14px;
+                font-size: 0.85rem;
+            }
+            
+            .form-input,
+            .form-textarea {
+                padding: 12px 14px;
+                font-size: 0.85rem;
+            }
+            
+            .checkbox-group {
+                grid-template-columns: 1fr;
+            }
+            
+            .sdg-tags,
+            .focus-area-tags {
+                gap: 8px;
+            }
+            
+            .sdg-tag,
+            .focus-area-tag {
+                padding: 6px 12px;
+                font-size: 0.7rem;
+            }
+        }
+
+        /******************************************************************
+         * History section animation
+         ******************************************************************/
+        #historySection {
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /******************************************************************
+         * Better focus visibility for accessibility
+         ******************************************************************/
+        .form-input:focus-visible,
+        .form-select:focus-visible,
+        .form-textarea:focus-visible,
+        .btn:focus-visible,
+        .checkbox-item:focus-within {
+            outline: 2px solid var(--secondary-green);
+            outline-offset: 2px;
+        }
+
+        /******************************************************************
+         * Table input styling improvements
+         ******************************************************************/
+        .data-table .form-input {
+            padding: 10px 12px;
+            font-size: 0.8rem;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.05);
+            box-shadow: none;
+        }
+
+        .data-table .form-input:focus {
+            transform: none;
+            box-shadow: 0 0 20px rgba(0,255,200,0.3);
+        }
+
+        /******************************************************************
+         * Print styles
+         ******************************************************************/
+        @media print {
+            .particles-bg,
+            .progress-wrapper,
+            .btn {
+                display: none !important;
+            }
+            
+            body {
+                background: white;
+                color: black;
+            }
+            
+            .glass-card,
+            .section-card {
+                background: white;
+                border: 1px solid #ccc;
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ambient mood lights -->
+    <div class="particles-bg">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <div class="main-container">
+        <!-- HEADER -->
+        <div class="glass-card header-block">
+            <div class="header-accent-ring"></div>
+
+            <img
+                src="https://www.cahyamata.com/wp-content/uploads/2015/02/Cahya-Mata-logo_CMYK.jpg"
+                alt="Cahya Mata Sarawak Logo"
+                class="logo"
+            />
+
+            <div class="title">CSR Management System</div>
+            <div class="subtitle">
+                Corporate Social Responsibility · <strong>Cahya Mata Sarawak Group</strong><br/>
+                Strategic impact, governance discipline, SDG alignment, and executive-level approval routing.
+            </div>
+        </div>
+
+        <!-- PROGRESS BAR -->
+        <div class="progress-wrapper">
+            <div class="progress-bar glass-card">
+                <div class="progress-step active" data-step="1">
+                    <div class="step-number">1</div>
+                    <div>Policy</div>
+                </div>
+                <div class="progress-step" data-step="2">
+                    <div class="step-number">2</div>
+                    <div>User Check</div>
+                </div>
+                <div class="progress-step" data-step="3">
+                    <div class="step-number">3</div>
+                    <div>Verification</div>
+                </div>
+                <div class="progress-step" data-step="4">
+                    <div class="step-number">4</div>
+                    <div>Request Details</div>
+                </div>
+                <div class="progress-step" data-step="5">
+                    <div class="step-number">5</div>
+                    <div>Review & Submit</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- =========================================================
+             SECTION 1: POLICY ACKNOWLEDGEMENT
+             ========================================================= -->
+        <section class="section active" id="section-1">
+            <div class="section-card">
+                <div class="section-headline">
+                    <div class="section-icon">📋</div>
+                    <div>
+                        <div class="section-title-text">CSR Policy & Governance Charter</div>
+                        <div class="section-desc">
+                            Please read the CSR / Sponsorship / Donation policy. Scrolling to the end will unlock acceptance.
+                            This acknowledgement will be logged with your request.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- policy viewer -->
+                <!-- policy viewer -->
+        <div class="policy-viewer" id="policyViewer">
+            <div class="policy-content" id="policyContent">
+                <h2 style="color: var(--text-strong); margin-bottom: 20px;">CSR / Sponsorship / Donation Policy</h2>
+                
+                <!-- PASTE YOUR POLICY TEXT HERE -->
+                <div style="line-height: 1.8; color: var(--text-mid);">
+                    <h3>1. Purpose</h3>
+                    <p>This policy outlines the guidelines and procedures for Corporate Social Responsibility (CSR), sponsorship, and donation requests within Cahya Mata Sarawak Group...</p>
+                    
+                    <h3>2. Scope</h3>
+                    <p>This policy applies to all requests for CSR support, sponsorships, and donations received by the Group...</p>
+                    
+                    <h3>3. Eligibility Criteria</h3>
+                    <p>Requests must meet the following criteria:</p>
+                    <ul>
+                        <li>Aligned with the Group's CSR focus areas</li>
+                        <li>Demonstrate clear social or environmental impact</li>
+                        <li>Have proper documentation and registration</li>
+                        <li>Not for personal gain or political purposes</li>
+                    </ul>
+                    
+                    <h3>4. Focus Areas</h3>
+                    <ul>
+                        <li>Education and Youth Development</li>
+                        <li>Community Well-Being and Development</li>
+                        <li>Environmental Conservation</li>
+                        <li>Indigenous Culture and Heritage</li>
+                        <li>Sports and Recreation</li>
+                        <li>Health and Safety</li>
+                    </ul>
+                    
+                    <h3>5. Approval Process</h3>
+                    <p>All requests will go through the following approval chain based on monetary value:</p>
+                    <ul>
+                        <li>Up to RM 5,000: CSR Team → Head of GCC</li>
+                        <li>RM 5,001 - RM 1,000,000: CSR Team → Head of GCC → GCFO</li>
+                        <li>Above RM 1,000,000: Full approval chain including GMD</li>
+                    </ul>
+                    
+                    <h3>6. Documentation Requirements</h3>
+                    <ul>
+                        <li>Formal written request</li>
+                        <li>Organization registration certificate</li>
+                        <li>Banking details for payment</li>
+                        <li>Event proposal or project details</li>
+                        <li>Previous engagement history (if applicable)</li>
+                    </ul>
+                    
+                    <h3>7. Prohibited Activities</h3>
+                    <p>The Group will not support:</p>
+                    <ul>
+                        <li>Political campaigns or activities</li>
+                        <li>Religious propagation</li>
+                        <li>Personal financial assistance</li>
+                        <li>Activities that may harm the Group's reputation</li>
+                        <li>Recurring requests without proper justification</li>
+                    </ul>
+                    
+                    <h3>8. Payment Terms</h3>
+                    <p>All approved contributions will be paid via bank transfer to the beneficiary's verified account. Cash payments are strictly prohibited.</p>
+                    
+                    <h3>9. Reporting and Accountability</h3>
+                    <p>Beneficiaries must provide:</p>
+                    <ul>
+                        <li>Acknowledgement of receipt</li>
+                        <li>Post-event report with photos</li>
+                        <li>Evidence of fund utilization</li>
+                        <li>Impact statement</li>
+                    </ul>
+                    
+                    <h3>10. SDG Alignment</h3>
+                    <p>All CSR activities should align with the United Nations Sustainable Development Goals (SDGs) to ensure our contributions support global sustainability efforts.</p>
+                    
+                    <h3>11. Review and Updates</h3>
+                    <p>This policy will be reviewed annually and updated as necessary to reflect changing business priorities and community needs.</p>
+                    
+                    <!-- ADD MORE CONTENT HERE TO MAKE IT LONGER SO SCROLLING IS REQUIRED -->
+                    <div style="margin-top: 40px; padding: 20px; background: rgba(0,184,148,0.1); border-radius: 12px;">
+                        <h3>Acknowledgement</h3>
+                        <p>By proceeding with this CSR request, I acknowledge that:</p>
+                        <ul>
+                            <li>I have read and understood this policy in its entirety</li>
+                            <li>The information provided in my request is accurate and complete</li>
+                            <li>I will comply with all documentation and reporting requirements</li>
+                            <li>I understand the approval process and timelines</li>
+                            <li>Any misrepresentation may result in rejection or withdrawal of support</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- This ensures content is long enough to scroll -->
+                    <div style="height: 200px;"></div>
+                </div>
+            </div>
+
+            <div class="scroll-indicator show" id="scrollIndicator">
+                📖 Scroll to the end to continue
+            </div>
+        </div>
+
+                <!-- acceptance -->
+                <div class="form-group">
+                    <label class="checkbox-item" style="cursor:default;">
+                        <input type="checkbox" id="policyAgreed" disabled />
+                        <span>
+                            I have read, understood, and will comply with Cahya Mata Sarawak Group's CSR policy.
+                        </span>
+                    </label>
+                </div>
+
+                <div class="button-row">
+                    <button class="btn btn-primary" id="nextStep1" type="button" disabled>
+                        Proceed to User Verification ➜
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             SECTION 2: USER VERIFICATION / ACCESS CONTROL
+             ========================================================= -->
+        <section class="section" id="section-2">
+            <div class="section-card">
+                <div class="section-headline">
+                    <div class="section-icon">👤</div>
+                    <div>
+                        <div class="section-title-text">User Verification</div>
+                        <div class="section-desc">
+                            Your access level determines what you can submit, view and approve. Only authorised internal
+                            users may proceed.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- loading state while we call getCurrentUser() -->
+                <div id="userInfo" class="loading-block">
+                    <div class="spinner"></div>
+                    <div>Authenticating you, please wait…</div>
+                </div>
+
+                <!-- populated if authorised -->
+                <div id="userDetails" style="display:none;">
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Full Name</label>
+                            <input class="form-input" id="userName" type="text" readonly />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Designation</label>
+                            <input class="form-input" id="userDesignation" type="text" readonly />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input class="form-input" id="userEmail" type="email" readonly />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Company</label>
+                            <input class="form-input" id="userCompany" type="text" readonly />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Role / Access Level</label>
+                            <input class="form-input" id="userRole" type="text" readonly />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Approval Limit (RM)</label>
+                            <input class="form-input" id="userLimit" type="text" readonly />
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group" style="grid-column: 1/-1; margin-top: 20px; padding-top: 20px; border-top: 2px solid rgba(0,184,148,0.3);">
+                  <p style="color: var(--text-mid); font-size: 0.9rem; margin-bottom: 16px;">
+                      <strong>Note:</strong> You are the CSR Representative entering this data. 
+                      If you are submitting on behalf of someone else (the actual requester), 
+                      please provide their details in the next section.
+                  </p>
+              </div>
+
+                <!-- access denied -->
+                <div class="alert-block alert-error" id="authError">
+                    <div style="font-weight:600; margin-bottom:4px;">❌ Access Denied</div>
+                    <div id="authErrorMsg">
+                        You are not authorised to submit CSR requests. Please contact the administrator.
+                    </div>
+                </div>
+
+                <div class="button-row">
+                    <button class="btn btn-secondary" onclick="goToStep(1)">⬅ Back</button>
+                    <button class="btn btn-primary" id="nextStep2" disabled>Continue to Compliance Checklist ➜</button>
+                </div>
+            </div>
+        </section>
+
+        
+        <section class="section" id="section-3">
+            <div class="section-card">
+                <div class="section-headline">
+                    <div class="section-icon">✅</div>
+                    <div>
+                        <div class="section-title-text">Verification & Compliance Checklist</div>
+                        <div class="section-desc">
+                            Tick all applicable conditions and record any historical support.
+                            This will inform routing to GCC / GCFO / GMD Office.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- checklist -->
+                <div class="checkbox-group">
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="checklist" value="addressed_to_gmd" />
+                        <span>Is the request addressed to the Group Managing Director?</span>
+                    </label>
+
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="checklist" value="addressed_to_sbu_md" />
+                        <span>Is the request addressed to your SBU MD / Head of Company?</span>
+                    </label>
+
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="checklist" value="recommend_to_gcfo" />
+                        <span>Does this request need to be recommended to the Group Chief Financial Officer?</span>
+                    </label>
+
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="checklist" value="bank_details_included" />
+                        <span>Are full payee banking details provided (statement / bank book / proof)?</span>
+                    </label>
+
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="checklist" value="registration_proof" />
+                        <span>Is NGO / Association / Organisation registration proof attached?</span>
+                    </label>
+
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="checklist" value="request_infrequent" />
+                        <span>Is this request NOT recurring / not repeatedly requested from us?</span>
+                    </label>
+
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="checklist" value="request_reasonable" />
+                        <span>Is the requested amount / item reasonable?</span>
+                    </label>
+
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="checklist" value="non_physical_cash" />
+                        <span>Is this request NON-physical cash (no walk-in envelope handout)?</span>
+                    </label>
+
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="checklist" value="good_intention" />
+                        <span>Does the request portray good intention / proper purpose?</span>
+                    </label>
+
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="checklist" value="adds_value" />
+                        <span>Does this contribute positively to Cahya Mata Sarawak Group’s reputation, ESG, or licence to operate?</span>
+                    </label>
+                </div>
+
+                
+
+                <div class="button-row">
+                    <button class="btn btn-secondary" onclick="goToStep(2)">⬅ Back</button>
+                    <button class="btn btn-primary" id="nextStep3">Continue to Request Details ➜</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             SECTION 4: REQUEST DETAILS (TYPE, AMOUNT, PAYEE, SDG)
+             ========================================================= -->
+        <section class="section" id="section-4">
+            <div class="section-card">
+                <div class="section-headline">
+                    <div class="section-icon">📄</div>
+                    <div>
+                        <div class="section-title-text">Request Details & SDG Alignment</div>
+                        <div class="section-desc">
+                            This section feeds the master “Submissions” sheet. It also powers routing:
+                            GCC → GCFO → GMD depending on amount. It captures SDG relevance for ESG analytics.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- HOD recommendation upload -->
+                <div class="form-group">
+                    <label class="form-label">
+                        📁 HOD / Head of BU Recommendation Letter
+                        <span class="form-hint">(Signed PDF / memo / email trail)</span>
+                    </label>
+                    <div class="file-upload" id="hodUpload">
+                        <input type="file" id="hodFile" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" multiple />
+                        <label class="file-upload-label" for="hodFile" id="hodFileLabel">
+                            📎 Click to upload recommendation / endorsement
+                        </label>
+                    </div>
+                </div>
+
+                <!-- =========================================================
+             SECTION 3: COMPLIANCE CHECKLIST + CONTRIBUTION HISTORY
+             ========================================================= -->
+              <!-- NEW: Requester Information (if different from CSR Rep) -->
+              <div class="form-section">
+                  <div class="section-subtitle">
+                      <span class="emoji">👤</span>
+                      <div>
+                          <div class="subtitle-text">Requester Information</div>
+                          <div class="subtitle-hint">
+                              If you are submitting on behalf of another person/organization, 
+                              provide their details here. Otherwise, leave blank.
+                          </div>
+                      </div>
+                  </div>
+                  
+                  <div class="form-grid-2">
+                      <div class="form-group">
+                          <label class="form-label">Requester Name</label>
+                          <input class="form-input" id="requesterName" 
+                                placeholder="Leave blank if you are the requester"
+                                onblur="checkAndLoadHistory()" />
+                                
+                      </div>
+                      
+                      <div class="form-group">
+                          <label class="form-label">Requester Email</label>
+                          <input class="form-input" id="requesterEmail" type="email"
+                                placeholder="Email to receive acknowledgement & success notifications" />
+                      </div>
+                      
+                      <div class="form-group">
+                          <label class="form-label">Requester Contact Number</label>
+                          <input class="form-input" id="requesterContact" type="tel"
+                                placeholder="Contact number" />
+                      </div>
+                      
+                      <div class="form-group">
+                          <label class="form-label">Organization/Individual Name</label>
+                          <input class="form-input" id="organizationName" 
+                                placeholder="Full organization or individual name"
+                                onblur="checkAndLoadHistory()" />
+                                
+                      </div>
+                      
+                      <div class="form-group">
+                          <label class="form-label">Organization RN / Individual NRIC</label>
+                          <input class="form-input" id="organizationNRIC" 
+                                placeholder="Registration number or NRIC" />
+                      </div>
+                      <div class="form-group" style="grid-column: 1 / -1;">
+                          <button type="button" class="btn btn-secondary" onclick="checkHistoryNow()">
+                              🔍 Check Contribution History
+                          </button>
+                      </div>
+                  </div>
+              </div>
+
+              <!-- past contribution history -->
+                <div id="historySection" style="margin-top:24px; display:none;">
+                    <div class="form-label" style="margin-bottom:4px; font-size:.9rem;">
+                        History of Continuous Support
+                        <span class="form-hint">(if this beneficiary has received recurring support, please summarise)</span>
+                    </div>
+
+                    <div class="table-shell" id="historyTable">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Year</th>
+                                    <th>Amount (RM)</th>
+                                    <th>Remarks</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyTableBody">
+                                <!-- dynamic rows -->
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td style="font-weight:bold;">Total</td>
+                                    <td style="font-weight:bold;" id="historyTotal">0.00</td>
+                                    <td colspan="2"></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <div style="margin-top:12px;">
+                        <button class="btn btn-secondary" type="button" onclick="addHistoryRow()">
+                            ➕ Add History Record
+                        </button>
+                    </div>
+                </div>
+
+
+                <!-- Request Type -->
+                <div class="form-group">
+                    <label class="form-label">
+                        Request Category
+                        <span class="form-hint">(Select the closest match)</span>
+                    </label>
+                    <select class="form-select" id="requestType">
+                        <option value="">Select request type…</option>
+                        <option value="Employee Volunteerism Initiative">Employee Volunteerism Initiative</option>
+                        <option value="Donation">Donation (In-Kind / Goods / Sponsorship)</option>
+                        <option value="Donation (Financial Contribution)">Donation (Financial Contribution / Cash Transfer)</option>
+                    </select>
+                </div>
+
+                <!-- dynamic block (EVI / Donation / Financial) -->
+                <div id="dynamicForm"></div>
+
+                <!-- SDG mapping / impact -->
+                <div style="margin-top:32px; border-top:1px solid rgba(255,255,255,0.15); padding-top:24px;">
+                    <div class="form-label" style="margin-bottom:4px;">
+                        SDG Alignment
+                        <span class="form-hint">(choose all that apply)</span>
+                    </div>
+                    <div class="sdg-tags" id="sdgTags">
+                        <div class="sdg-tag" data-sdg="SDG 1 No Poverty">SDG 1 No Poverty</div>
+                        <div class="sdg-tag" data-sdg="SDG 2 Zero Hunger">SDG 2 Zero Hunger</div>
+                        <div class="sdg-tag" data-sdg="SDG 3 Good Health & Wellbeing">SDG 3 Health & Wellbeing</div>
+                        <div class="sdg-tag" data-sdg="SDG 4 Quality Education">SDG 4 Education</div>
+                        <div class="sdg-tag" data-sdg="SDG 5 Gender Equality">SDG 5 Gender Equality</div>
+                        <div class="sdg-tag" data-sdg="SDG 6 Clean Water & Sanitation">SDG 6 Clean Water</div>
+                        <div class="sdg-tag" data-sdg="SDG 7 Affordable & Clean Energy">SDG 7 Clean Energy</div>
+                        <div class="sdg-tag" data-sdg="SDG 8 Decent Work & Economic Growth">SDG 8 Decent Work</div>
+                        <div class="sdg-tag" data-sdg="SDG 9 Industry, Innovation & Infrastructure">SDG 9 Innovation</div>
+                        <div class="sdg-tag" data-sdg="SDG 10 Reduced Inequalities">SDG 10 Inequalities</div>
+                        <div class="sdg-tag" data-sdg="SDG 11 Sustainable Cities & Communities">SDG 11 Cities</div>
+                        <div class="sdg-tag" data-sdg="SDG 12 Responsible Consumption & Production">SDG 12 Responsible Use</div>
+                        <div class="sdg-tag" data-sdg="SDG 13 Climate Action">SDG 13 Climate Action</div>
+                        <div class="sdg-tag" data-sdg="SDG 14 Life Below Water">SDG 14 Oceans</div>
+                        <div class="sdg-tag" data-sdg="SDG 15 Life On Land">SDG 15 Biodiversity</div>
+                        <div class="sdg-tag" data-sdg="SDG 16 Peace, Justice & Strong Institutions">SDG 16 Governance</div>
+                        <div class="sdg-tag" data-sdg="SDG 17 Partnerships for the Goals">SDG 17 Partnerships</div>
+                    </div>
+                    <div class="sdg-legend">
+                        SDG tags allow CSR to measure ESG impact, coverage rate, and priority vs. amount.
+                    </div>
+
+                    <div class="form-grid-2" style="margin-top:20px;">
+                        <div class="form-group">
+                            <label class="form-label">Impact Category / Theme</label>
+                            <input class="form-input" id="impactCategory" placeholder="e.g. Community Well-Being, Indigenous Heritage, Youth Sports" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Beneficiary Count (people impacted)</label>
+                            <input class="form-input" id="beneficiaryCount" type="number" min="0" placeholder="e.g. 120" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Geographic Area</label>
+                            <input class="form-input" id="geographicArea" placeholder="e.g. Kuching / Miri / Rural Sarawak / Malaysia-wide" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Project Duration / Event Date Range</label>
+                            <input class="form-input" id="duration" placeholder="e.g. 1-day event / Ongoing (Jan–Dec 2025)" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="button-row">
+                    <button class="btn btn-secondary" onclick="goToStep(3)">⬅ Back</button>
+                    <button class="btn btn-primary" id="nextStep4" disabled>Generate Preview ➜</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             SECTION 5: REVIEW & SUBMIT
+             ========================================================= -->
+        <section class="section" id="section-5">
+            <div class="section-card">
+                <div class="section-headline">
+                    <div class="section-icon">🔍</div>
+                    <div>
+                        <div class="section-title-text">Review Your Submission</div>
+                        <div class="section-desc">
+                            This summary will be logged into
+                            <strong>“Submissions”</strong> and routed for approval
+                            (GCC → GCFO → GMD) based on RM threshold.
+                        </div>
+                    </div>
+                </div>
+
+                <div id="previewContent" class="preview-shell">
+                    <!-- dynamic preview goes here -->
+                </div>
+
+                <div class="alert-block alert-error" id="submissionError"></div>
+
+                <div class="button-row">
+                    <button class="btn btn-secondary" onclick="goToStep(4)">⬅ Back to Edit</button>
+                    <button class="btn btn-success" id="submitRequestBtn">🚀 Submit CSR Request</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             SECTION SUCCESS
+             ========================================================= -->
+        <section class="section" id="section-success" style="display:none;">
+            <div class="section-card">
+                <div class="success-wrapper">
+                    <div class="success-emoji">🎉</div>
+                    <div class="success-headline">Request Submitted Successfully</div>
+                    <div class="success-details" id="successDetailsTop">
+                        Your CSR request has been received and is now under review
+                    </div>
+
+                    <div class="success-card" id="successDetails">
+                        <!-- populated with requestId, stage, etc -->
+                    </div>
+
+                    <div class="info-box" style="margin-top: 24px;">
+                      <p style="margin: 0; line-height: 1.6;">
+                          <strong>📧 Email Notifications:</strong><br/>
+                          • Acknowledgement email sent to: <strong id="successRequesterEmail"></strong><br/>
+                          • Copy sent to CSR Representative: <strong id="successCSREmail"></strong><br/>
+                          • You will receive updates at each stage of the approval process
+                      </p>
+                  </div>
+
+                    <div class="button-row" style="margin-top: 32px;">
+                      <a href="?page=status" class="btn btn-primary">
+                          📊 Track Request Status
+                      </a>
+                      <button class="btn btn-secondary" onclick="location.reload()">
+                          ➕ Submit Another Request
+                      </button>
+                  </div>
+              </div>
+        </section>
+    </div>
+
+    <!-- global loading overlay (center screen for final submissions) -->
+    <div
+        id="globalLoading"
+        class="loading-block"
+        style="position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:9999; backdrop-filter:blur(6px); align-items:center; justify-content:center; flex-direction:column;"
+    >
+        <div class="spinner"></div>
+        <div style="color:#fff; font-size:.9rem;">Processing your request…</div>
+    </div>
+
+    <script>
+        /******************************************************************
+         * GLOBAL STATE
+         ******************************************************************/
+        let currentStep = 1;
+
+        // master state for preview / submission
+        const formState = {
+            user: {},                 // populated from getCurrentUser()
+            policyAcknowledged: false,
+            verificationChecklist: {},
+            contributionHistory: [],
+            request: {
+                requestType: "",
+                // EVI
+                eventName: "",
+                eventDate: "",
+                eventLocation: "",
+                eventDescription: "",
+                eventObjectives: "",
+                eviType: "", // EVI (with expense) / EVI (without expense)
+                // Donation / Financial
+                requestorName: "",
+                requestorEmail: "",
+                donationItems: [],
+                donationAmount: 0,
+                // Payee/bank
+                accountHolderName: "",
+                bankName: "",
+                bankAccountNumber: "",
+                // shared "purpose" text
+                purposeText: "",
+                // computed money
+                totalAmountRM: 0
+            },
+            supportingDocuments: {
+                hod: [],
+                evi: [],
+                donation: [],
+                fc: []
+            },
+            // SDG + impact block
+            sdgGoals: [],
+            impactCategory: "",
+            beneficiaryCount: "",
+            geographicArea: "",
+            duration: ""
+        };
+
+        // show/hide final overlay
+        hideGlobalLoading();
+
+        /******************************************************************
+         * INIT
+         ******************************************************************/
+        document.addEventListener("DOMContentLoaded", () => {
+            initPolicyGate();
+            initEventListeners();
+            initUserAuth();
+        });
+
+        /******************************************************************
+         * STEP / NAVIGATION LOGIC
+         ******************************************************************/
+        function goToStep(stepNum) {
+            // hide current active section
+            const active = document.querySelector(".section.active");
+            if (active) active.classList.remove("active");
+
+            // special handling success page -> skip progress UI modifications
+            if (stepNum === "success") {
+                document.getElementById("section-success").style.display = "block";
+                document.getElementById("section-success").classList.add("active");
+                updateProgressBar(6); // mark all completed visually
+                currentStep = stepNum;
+                return;
+            }
+
+            // show target section
+            const target = document.getElementById(`section-${stepNum}`);
+            if (target) {
+                target.classList.add("active");
+            }
+
+            // update progress bar visuals
+            updateProgressBar(stepNum);
+
+            currentStep = stepNum;
+
+            // pre-actions
+            if (stepNum === 5) {
+                generatePreview();
+            }
+        }
+
+        function updateProgressBar(stepNum) {
+            const steps = document.querySelectorAll(".progress-step");
+            steps.forEach((el, idx) => {
+                el.classList.remove("active", "completed");
+
+                const thisStep = idx + 1;
+                if (thisStep < stepNum) {
+                    el.classList.add("completed");
+                } else if (thisStep === stepNum) {
+                    el.classList.add("active");
+                }
+            });
+        }
+
+        /******************************************************************
+         * POLICY (STEP 1)
+         ******************************************************************/
+        function initPolicyGate() {
+          const policyContent = document.getElementById("policyContent");
+          const scrollIndicator = document.getElementById("scrollIndicator");
+          const checkbox = document.getElementById("policyAgreed");
+          const nextBtn = document.getElementById("nextStep1");
+          
+          // Detect when user scrolls to the bottom
+          policyContent.addEventListener("scroll", function() {
+              const scrollTop = policyContent.scrollTop;
+              const scrollHeight = policyContent.scrollHeight;
+              const clientHeight = policyContent.clientHeight;
+              
+              // Check if scrolled to bottom (with 10px tolerance)
+              const scrolledToBottom = scrollTop + clientHeight >= scrollHeight - 10;
+              
+              if (scrolledToBottom) {
+                  // User has scrolled to the end!
+                  scrollIndicator.classList.remove("show");
+                  enablePolicyCheckbox();
+              }
+          });
+          
+          function enablePolicyCheckbox() {
+              checkbox.disabled = false;
+              checkbox.addEventListener("change", e => {
+                  formState.policyAcknowledged = e.target.checked;
+                  nextBtn.disabled = !e.target.checked;
+              });
+          }
+      }
+
+        /******************************************************************
+         * USER VERIFICATION (STEP 2)
+         * Backs Code.gs:
+         *   getCurrentUser() → { success, authorized, user{fullName,email,...,approvalLimit } }
+         ******************************************************************/
+        function initUserAuth() {
+            const userInfoBlock = document.getElementById("userInfo");
+            const userDetailsBlock = document.getElementById("userDetails");
+            const authErrorBlock = document.getElementById("authError");
+            const authErrorMsg = document.getElementById("authErrorMsg");
+            const nextStep2Btn = document.getElementById("nextStep2");
+
+            // show loader
+            userInfoBlock.classList.add("show");
+
+            google.script.run
+                .withSuccessHandler(result => {
+                    userInfoBlock.classList.remove("show");
+
+                    if (!result || !result.success) {
+                        authErrorBlock.classList.add("show");
+                        authErrorMsg.textContent = (result && result.error)
+                            ? result.error
+                            : "Unable to authenticate user.";
+                        return;
+                    }
+
+                    if (!result.authorized) {
+                        authErrorBlock.classList.add("show");
+                        authErrorMsg.textContent = result.message || "You are not authorised.";
+                        return;
+                    }
+
+                    // authorised path
+                    formState.user = {
+                        fullName: result.user.fullName,
+                        designation: result.user.designation,
+                        email: result.user.email,
+                        company: result.user.company,
+                        role: result.user.role,
+                        approvalLimit: result.user.approvalLimit
+                    };
+
+                    document.getElementById("userName").value = result.user.fullName || "";
+                    document.getElementById("userDesignation").value = result.user.designation || "";
+                    document.getElementById("userEmail").value = result.user.email || "";
+                    document.getElementById("userCompany").value = result.user.company || "";
+                    document.getElementById("userRole").value = result.user.role || "";
+                    document.getElementById("userLimit").value =
+                        (result.user.approvalLimit || 0).toLocaleString("en-MY", {
+                            minimumFractionDigits: 2
+                        });
+
+                    userDetailsBlock.style.display = "block";
+                    nextStep2Btn.disabled = false;
+                })
+                .withFailureHandler(err => {
+                    userInfoBlock.classList.remove("show");
+                    authErrorBlock.classList.add("show");
+                    authErrorMsg.textContent = "Authorization failed: " + err.message;
+                })
+                .getCurrentUser(); // defined in Code.gs
+        }
+
+        /******************************************************************
+         * Compliance checklist + history (STEP 3)
+         ******************************************************************/
+        function initEventListeners() {
+
+            // step 1 -> step 2  (missing)
+            document.getElementById("nextStep1").addEventListener("click", () => {
+              goToStep(2);
+            });
+            // step 2 -> step 3
+            document.getElementById("nextStep2").addEventListener("click", () => {
+                // REMOVED: Don't auto-load history here - user will click button manually
+                // loadContributionHistoryFromSheet(); // DISABLED - causes premature loading
+                goToStep(3);
+            });
+
+            // step 3 -> step 4
+            document.getElementById("nextStep3").addEventListener("click", () => {
+                captureChecklistState();
+                captureHistoryState();
+                goToStep(4);
+            });
+
+            // requestType dynamic form logic
+            document.getElementById("requestType").addEventListener("change", e => {
+                loadDynamicRequestForm(e.target.value);
+            });
+
+            // Upload blocks
+            setupFileUpload("hodFile", "hodUpload", "hod");
+
+            // SDG tag multi-select
+            document.querySelectorAll(".sdg-tag").forEach(tag => {
+                tag.addEventListener("click", () => {
+                    tag.classList.toggle("selected");
+                });
+            });
+
+            // final step -> preview
+            document.getElementById("nextStep4").addEventListener("click", () => {
+                captureRequestDetails();
+                goToStep(5);
+            });
+
+            // SUBMIT
+            document.getElementById("submitRequestBtn").addEventListener("click", () => {
+                submitToServer();
+            });
+        }
+
+  // Check if both names are entered, then load history
+        /******************************************************************
+         * HISTORY LOOKUP FUNCTIONS - FIXED VERSION
+         ******************************************************************/
+        // AUTO-LOAD: Triggered when user leaves either name/org field
+        function checkAndLoadHistory() {
+            const nameInput = document.getElementById("requesterName");
+            const orgInput = document.getElementById("organizationName");
+            
+            const requesterName = (nameInput?.value || "").trim();
+            const orgName = (orgInput?.value || "").trim();
+            
+            // Only proceed if BOTH fields have values
+            if (requesterName && orgName) {
+                console.log("Auto-loading history for:", requesterName, "/", orgName);
+                document.getElementById("historySection").style.display = "block";
+                loadHistoryData(requesterName, orgName);
+            }
+        }
+        // MAIN: Triggered by "Check Contribution History" button
+        function checkHistoryNow() {
+            console.log("=== checkHistoryNow called ===");
+            
+            const nameInput = document.getElementById("requesterName");
+            const orgInput = document.getElementById("organizationName");
+            
+            if (!nameInput || !orgInput) {
+                console.error("Input fields not found!");
+                alert("Error: Input fields not found");
+                return;
+            }
+            
+            const requesterName = nameInput.value.trim();
+            const orgName = orgInput.value.trim();
+            
+            console.log("Input values - Name:", requesterName, "| Org:", orgName);
+            
+            if (!requesterName) {
+                alert("Please enter Requester Name");
+                nameInput.focus();
+                return;
+            }
+            
+            if (!orgName) {
+                alert("Please enter Organization/Individual Name");
+                orgInput.focus();
+                return;
+            }
+            
+            // Show the history section
+            document.getElementById("historySection").style.display = "block";
+            
+            // Call backend
+            loadHistoryData(requesterName, orgName);
+        }
+
+        // BACKEND CALL: Fetches history from Google Sheets
+        function loadHistoryData(requesterName, orgName) {
+            console.log("=== loadHistoryData called ===");
+            console.log("Parameters - Name:", requesterName, "| Org:", orgName);
+            
+            showGlobalLoading();
+            
+            // Add timeout fallback
+            const timeoutId = setTimeout(function() {
+                hideGlobalLoading();
+                console.error("Request timed out after 30 seconds");
+                alert("Request timed out. Please try again.");
+            }, 30000);
+            
+            google.script.run
+                .withSuccessHandler(function(result) {
+                    clearTimeout(timeoutId);
+                    hideGlobalLoading();
+                    
+                    console.log("=== Backend Response ===");
+                    console.log("Raw result:", result);
+                    console.log("Type:", typeof result);
+                    
+                    // Handle null/undefined response
+                    if (result === null || result === undefined) {
+                        console.error("Backend returned null/undefined");
+                        alert("Error: Server returned no data. Please check:\n1. SPREADSHEET_ID is set in Code.gs\n2. Web app is redeployed with new version\n3. Check Apps Script execution logs");
+                        displayNoHistory();
+                        return;
+                    }
+                    
+                    // Handle error response
+                    if (!result.success) {
+                        console.error("Backend error:", result.message);
+                        alert("Error: " + (result.message || "Unknown error"));
+                        displayNoHistory();
+                        return;
+                    }
+                    
+                    // Handle successful response
+                    if (result.history && result.history.length > 0) {
+                        console.log("Found " + result.history.length + " records");
+                        displayHistoryData(result.history);
+                        alert("Found " + result.history.length + " previous contribution(s)!");
+                    } else {
+                        console.log("No history found");
+                        alert(result.message || "No previous contributions found for this requester/organization");
+                        displayNoHistory();
+                    }
+                })
+                .withFailureHandler(function(error) {
+                    clearTimeout(timeoutId);
+                    hideGlobalLoading();
+                    
+                    console.error("=== Backend Failure ===");
+                    console.error("Error object:", error);
+                    console.error("Message:", error.message);
+                    
+                    alert("Server Error: " + (error.message || "Unknown error") + "\n\nPlease check the Apps Script execution logs for details.");
+                    displayNoHistory();
+                })
+                .getContributionHistoryByNames(requesterName, orgName);
+        }
+        
+        // Helper to display "no history" state
+        function displayNoHistory() {
+            document.getElementById("historyTableBody").innerHTML = "";
+            document.getElementById("historyTotal").textContent = "0.00";
+            formState.contributionHistory = [];
+        }
+
+        // DISPLAY: Populates the table with history data
+        function displayHistoryData(historyArray) {
+            console.log("=== displayHistoryData ===");
+            console.log("Displaying", historyArray.length, "records");
+            
+            const tbody = document.getElementById("historyTableBody");
+            tbody.innerHTML = "";
+            
+            let total = 0;
+            
+            historyArray.forEach(function(item, index) {
+                console.log("Record " + index + ":", item);
+                
+                const row = document.createElement("tr");
+                const amount = parseFloat(item.amount) || 0;
+                total += amount;
+                
+                // Build remarks from available fields
+                const remarks = [item.requestType || "", item.notes || ""]
+                    .filter(Boolean)
+                    .join(" - ");
+                
+                // Clean year value
+                let yearValue = item.year || "";
+                if (typeof yearValue === "number") {
+                    yearValue = Math.floor(yearValue);
+                }
+                
+                row.innerHTML = `
+                    <td>
+                        <input class="form-input" type="number" min="2000" max="2100"
+                            value="${yearValue}" readonly 
+                            style="background: rgba(255,255,255,0.05); cursor: not-allowed;" />
+                    </td>
+                    <td>
+                        <input class="form-input" type="number" step="0.01" min="0"
+                            value="${amount}" readonly 
+                            style="background: rgba(255,255,255,0.05); cursor: not-allowed;" />
+                    </td>
+                    <td>
+                        <input class="form-input" type="text" 
+                            value="${remarks}" readonly 
+                            style="background: rgba(255,255,255,0.05); cursor: not-allowed;" />
+                    </td>
+                    <td style="text-align: center; color: var(--text-dim); font-size: 0.85rem;">
+                        ${item.status || 'Completed'}
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+            
+            document.getElementById("historyTotal").textContent = total.toFixed(2);
+            formState.contributionHistory = historyArray;
+            
+            console.log("Total amount:", total);
+        }
+
+        // MANUAL ADD: User can manually add rows
+        function addHistoryRow() {
+            const tbody = document.getElementById("historyTableBody");
+            const row = document.createElement("tr");
+            
+            row.innerHTML = `
+                <td>
+                    <input class="form-input" type="number" min="2000" max="2100"
+                        placeholder="2024" onchange="updateHistoryManualTotal()" />
+                </td>
+                <td>
+                    <input class="form-input" type="number" step="0.01" min="0"
+                        placeholder="0.00" onchange="updateHistoryManualTotal()" />
+                </td>
+                <td>
+                    <input class="form-input" type="text" 
+                        placeholder="Description / remarks" />
+                </td>
+                <td>
+                    <button class="row-action-btn" onclick="removeHistoryRow(this)">🗑</button>
+                </td>
+            `;
+            
+            tbody.appendChild(row);
+        }
+
+        function removeHistoryRow(btn) {
+            btn.closest("tr").remove();
+            updateHistoryManualTotal();
+        }
+
+        function updateHistoryManualTotal() {
+            let total = 0;
+            document.querySelectorAll("#historyTableBody tr").forEach(function(tr) {
+                const inputs = tr.querySelectorAll("input[type='number']");
+                if (inputs.length >= 2) {
+                    const amount = parseFloat(inputs[1].value) || 0;
+                    total += amount;
+                }
+            });
+            document.getElementById("historyTotal").textContent = total.toFixed(2);
+        }
+
+        function captureChecklistState() {
+            const checklist = {};
+            document.querySelectorAll('input[name="checklist"]').forEach(function(checkbox) {
+                checklist[checkbox.value] = checkbox.checked;
+            });
+            formState.verificationChecklist = checklist;
+        }
+
+        function captureHistoryState() {
+            const rows = [];
+            document.querySelectorAll("#historyTableBody tr").forEach(function(tr) {
+                const inputs = tr.querySelectorAll("input");
+                if (inputs.length >= 3) {
+                    const year = inputs[0].value;
+                    const amount = inputs[1].value;
+                    const remarks = inputs[2].value;
+                    if (year || amount || remarks) {
+                        rows.push({
+                            year: year,
+                            amount: parseFloat(amount) || 0,
+                            remarks: remarks
+                        });
+                    }
+                }
+            });
+            formState.contributionHistory = rows;
+        }
+
+
+        /******************************************************************
+         * FILE UPLOAD HELPERS
+         * We are not actually sending blobs here.
+         * We'll just keep filenames to log in Code.gs sheet.
+         ******************************************************************/
+        function setupFileUpload(inputId, wrapperId, slotKey) {
+            const inputEl = document.getElementById(inputId);
+            const wrapEl = document.getElementById(wrapperId);
+            const labelEl = wrapEl.querySelector(".file-upload-label");
+
+            if (!inputEl) return;
+            inputEl.addEventListener("change", () => {
+                const files = [...inputEl.files];
+                if (files.length > 0) {
+                    wrapEl.classList.add("has-file");
+                    labelEl.textContent = `✅ ${files.length} file(s) selected`;
+                    formState.supportingDocuments[slotKey] = files.map(f => f.name);
+                } else {
+                    wrapEl.classList.remove("has-file");
+                    labelEl.textContent = "📎 Click to upload recommendation / endorsement";
+                    formState.supportingDocuments[slotKey] = [];
+                }
+            });
+        }
+
+        /******************************************************************
+         * REQUEST TYPE FORMS (STEP 4)
+         ******************************************************************/
+        function loadDynamicRequestForm(typeVal) {
+            const container = document.getElementById("dynamicForm");
+            let html = "";
+
+            formState.request.requestType = typeVal || "";
+
+            if (!typeVal) {
+                container.innerHTML = "";
+                document.getElementById("nextStep4").disabled = true;
+                return;
+            }
+
+            if (typeVal === "Employee Volunteerism Initiative") {
+                html = renderEVIForm();
+            } else if (typeVal === "Donation") {
+                html = renderDonationInKindForm();
+            } else if (typeVal === "Donation (Financial Contribution)") {
+                html = renderDonationCashForm();
+            }
+
+            container.innerHTML = html;
+
+            // attach context-specific listeners
+            if (typeVal === "Employee Volunteerism Initiative") {
+                // EVI upload
+                setupFileUpload("eviDocsFile","eviDocsUpload","evi");
+
+                // toggle expense section
+                document.getElementById("eviRequestType").addEventListener("change", e => {
+                    formState.request.eviType = e.target.value;
+                    const expenseBlock = document.getElementById("eviExpenseSection");
+                    if (e.target.value === "EVI (with expense)") {
+                        expenseBlock.style.display = "block";
+                    } else {
+                        expenseBlock.style.display = "none";
+                    }
+                });
+
+                document.querySelectorAll(".focus-area-tag").forEach(tag => {
+                    tag.addEventListener("click", () => {
+                        tag.classList.toggle("selected");
+                    });
+                });
+
+            } else if (typeVal === "Donation") {
+                setupFileUpload("donationDocsFile","donationDocsUpload","donation");
+                // First row for donation items
+                addDonationItem();
+                // Auto-load contribution history when email is entered
+                setTimeout(() => {
+                    const emailField = document.getElementById("requestorEmail");
+                    if (emailField) {
+                        emailField.addEventListener("blur", function() {
+                            const email = this.value.trim();
+                            if (email && email.includes("@")) {
+                                loadContributionHistoryFromSheet();
+                            }
+                        });
+                    }
+                }, 100);
+
+            } else if (typeVal === "Donation (Financial Contribution)") {
+                setupFileUpload("fcDocsFile","fcDocsUpload","fc");
+                // bind live update of RM box
+                document.getElementById("donationAmount").addEventListener("input", updateDonationDisplay);
+                    // Auto-load contribution history when email is entered
+                setTimeout(() => {
+                    const emailField = document.getElementById("requestorEmail");
+                    if (emailField) {
+                        emailField.addEventListener("blur", function() {
+                            const email = this.value.trim();
+                            if (email && email.includes("@")) {
+                                loadContributionHistoryFromSheet();
+                            }
+                        });
+                    }
+                }, 100);
+
+            }
+
+            document.getElementById("nextStep4").disabled = false;
+        }
+
+        function renderEVIForm() {
+            return `
+            <div style="margin-top:24px; border-radius:20px; border:1px solid rgba(0,255,200,0.4); background:rgba(0,255,200,0.06); box-shadow:0 30px 100px rgba(0,0,0,0.9),0 0 40px rgba(0,255,200,0.3); padding:24px;">
+                <div class="form-label" style="margin-bottom:16px;">
+                    🤝 Employee Volunteerism Initiative (EVI)
+                </div>
+
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Event Name</label>
+                        <input class="form-input" id="eventName" placeholder="Beach Cleanup / STEM Outreach / Blood Donation Drive"/>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Event Date</label>
+                        <input class="form-input" id="eventDate" type="date"/>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Event Location</label>
+                        <input class="form-input" id="eventLocation" placeholder="Location / Venue"/>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">EVI Type</label>
+                        <select class="form-select" id="eviRequestType">
+                            <option value="">Select…</option>
+                            <option value="EVI (with expense)">EVI (with expense)</option>
+                            <option value="EVI (without expense)">EVI (without expense)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Event Description</label>
+                        <textarea class="form-textarea" id="eventDescription" placeholder="Describe what will happen, who benefits, etc."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Objectives / Intended Impact</label>
+                        <textarea class="form-textarea" id="eventObjectives" placeholder="Why are we doing this? What outcome do we want?"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Focus Area(s)</label>
+                    <div class="focus-area-tags" id="focusAreaTags">
+                        <div class="focus-area-tag" data-area="Education">Education</div>
+                        <div class="focus-area-tag" data-area="Community Well-Being & Development">Community Well-Being & Development</div>
+                        <div class="focus-area-tag" data-area="Environment">Environment</div>
+                        <div class="focus-area-tag" data-area="Youth & Sports">Youth & Sports</div>
+                        <div class="focus-area-tag" data-area="Sarawak Indigenous Music, Arts & Buildings">Sarawak Indigenous Culture</div>
+                        <div class="focus-area-tag" data-area="Official State Function">Official State Function</div>
+                    </div>
+                </div>
+
+                <div id="eviExpenseSection" style="display:none;">
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Expenses Amount (RM)</label>
+                            <input class="form-input" id="expenseAmount" type="number" step="0.01" min="0" placeholder="0.00"/>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Account Holder / Payee Name</label>
+                            <input class="form-input" id="accountHolderName" placeholder="Name to pay"/>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Bank Name</label>
+                            <input class="form-input" id="bankName" placeholder="Bank"/>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Bank Account Number</label>
+                            <input class="form-input" id="bankAccountNumber" placeholder="000-000-0000"/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">📎 Supporting Documents</label>
+                    <div class="file-upload" id="eviDocsUpload">
+                        <input type="file" id="eviDocsFile" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" multiple />
+                        <label class="file-upload-label" for="eviDocsFile">
+                            📎 Upload event proposal / pictures / supporting letters
+                        </label>
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        function renderDonationInKindForm() {
+            return `
+            <div style="margin-top:24px; border-radius:20px; border:1px solid rgba(253,203,110,0.4); background:rgba(253,203,110,0.07); box-shadow:0 30px 100px rgba(0,0,0,0.9),0 0 40px rgba(253,203,110,0.4); padding:24px;">
+                <div class="form-label" style="margin-bottom:16px;">
+                    🎁 Donation (In-Kind / Sponsorship)
+                </div>
+
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Requester / Organisation</label>
+                        <input class="form-input" id="requestorName" placeholder="NGO / School / Association name"/>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Requester Email</label>
+                        <input class="form-input" id="requestorEmail" type="email" placeholder="contact@org.com"/>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Requested Donation Items</label>
+                    <div class="table-shell">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Item / Description</th>
+                                    <th>Quantity</th>
+                                    <th>Unit Value (RM)</th>
+                                    <th>Total (RM)</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="donationItemsBody">
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="3" style="font-weight:600;">Sub-Total Donation (RM)</td>
+                                    <td style="font-weight:600;" id="donationSubTotal">0.00</td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <div style="margin-top:12px;">
+                        <button class="btn btn-secondary" type="button" onclick="addDonationItem()">
+                            ➕ Add Item
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Account Holder / Payee Name</label>
+                        <input class="form-input" id="accountHolderName" placeholder="Who gets paid / reimbursed"/>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Bank Name</label>
+                        <input class="form-input" id="bankName" placeholder="Bank"/>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Bank Account Number</label>
+                        <input class="form-input" id="bankAccountNumber" placeholder="000-000-0000"/>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">📎 Supporting Documents</label>
+                    <div class="file-upload" id="donationDocsUpload">
+                        <input type="file" id="donationDocsFile" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" multiple />
+                        <label class="file-upload-label" for="donationDocsFile">
+                            📎 Upload request letter / bank details / receipts / quotations
+                        </label>
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        function renderDonationCashForm() {
+            return `
+            <div style="margin-top:24px; border-radius:20px; border:1px solid rgba(0,184,148,0.4); background:rgba(0,184,148,0.07); box-shadow:0 30px 100px rgba(0,0,0,0.9),0 0 40px rgba(0,255,170,0.4); padding:24px;">
+                <div class="form-label" style="margin-bottom:16px;">
+                    💰 Donation (Financial Contribution / Cash Transfer)
+                </div>
+
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Requester / Organisation</label>
+                        <input class="form-input" id="requestorName" placeholder="NGO / Association / Community rep"/>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Requester Email</label>
+                        <input class="form-input" id="requestorEmail" type="email" placeholder="contact@requester.com"/>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Requested Amount (RM)</label>
+                        <input class="form-input" id="donationAmount" type="number" min="0" step="0.01" placeholder="0.00"/>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Live Amount Preview</label>
+                        <div class="amount-display" id="donationDisplay">RM 0.00</div>
+                    </div>
+                </div>
+
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Account Holder / Payee Name</label>
+                        <input class="form-input" id="accountHolderName" placeholder="Who receives the funds"/>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Bank Name</label>
+                        <input class="form-input" id="bankName" placeholder="Bank"/>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Bank Account Number</label>
+                        <input class="form-input" id="bankAccountNumber" placeholder="000-000-0000"/>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">📎 Supporting Documents</label>
+                    <div class="file-upload" id="fcDocsUpload">
+                        <input type="file" id="fcDocsFile" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" multiple />
+                        <label class="file-upload-label" for="fcDocsFile">
+                            📎 Upload request letter / invoice / proof of bank account
+                        </label>
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        /******************************************************************
+         * Donation items logic (in-kind)
+         ******************************************************************/
+        function addDonationItem() {
+            const tbody = document.getElementById("donationItemsBody");
+            if (!tbody) return;
+
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>
+                    <input class="form-input" placeholder="Item / service" onchange="updateDonationTotals()" />
+                </td>
+                <td>
+                    <input class="form-input" type="number" step="0.01" min="0" placeholder="0.00" onchange="updateDonationTotals()" />
+                </td>
+                <td>
+                    <input class="form-input" type="number" min="1" value="1" onchange="updateDonationTotals()" />
+                </td>
+                <td class="item-total">0.00</td>
+                <td>
+                    <button class="row-action-btn" onclick="removeDonationItem(this)">🗑</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+            updateDonationTotals();
+        }
+
+        function removeDonationItem(btn) {
+            btn.closest("tr").remove();
+            updateDonationTotals();
+        }
+
+        function updateDonationTotals() {
+            let total = 0;
+            document.querySelectorAll("#donationItemsBody tr").forEach(row => {
+                const unitVal = parseFloat(row.children[1].querySelector("input").value) || 0;
+                const qtyVal  = parseFloat(row.children[2].querySelector("input").value) || 0;
+                const subtotal = unitVal * qtyVal;
+                row.querySelector(".item-total").textContent = subtotal.toFixed(2);
+                total += subtotal;
+            });
+            const subTotalCell = document.getElementById("donationSubTotal");
+            if (subTotalCell) subTotalCell.textContent = total.toFixed(2);
+        }
+
+        // financial contribution live RM box
+        function updateDonationDisplay() {
+            const val = parseFloat(document.getElementById("donationAmount").value) || 0;
+            document.getElementById("donationDisplay").textContent =
+                "RM " + val.toLocaleString("en-MY", {minimumFractionDigits:2});
+        }
+
+        /******************************************************************
+         * CAPTURE REQUEST DETAILS BEFORE PREVIEW (STEP 4 -> 5)
+         ******************************************************************/
+        function captureRequestDetails() {
+            const typeVal = document.getElementById("requestType").value || "";
+
+            // Common payee fields (if exist)
+            const accHolderEl = document.getElementById("accountHolderName");
+            const bankNameEl = document.getElementById("bankName");
+            const bankAcctEl = document.getElementById("bankAccountNumber");
+
+            formState.request.requestType = typeVal;
+
+            // default blanks
+            formState.request.accountHolderName = accHolderEl ? accHolderEl.value : "";
+            formState.request.bankName = bankNameEl ? bankNameEl.value : "";
+            formState.request.bankAccountNumber = bankAcctEl ? bankAcctEl.value : "";
+            formState.request.totalAmountRM = 0;
+            formState.request.purposeText = "";
+
+            if (typeVal === "Employee Volunteerism Initiative") {
+                formState.request.eventName = getVal("eventName");
+                formState.request.eventDate = getVal("eventDate");
+                formState.request.eventLocation = getVal("eventLocation");
+                formState.request.eventDescription = getVal("eventDescription");
+                formState.request.eventObjectives = getVal("eventObjectives");
+                formState.request.eviType = getVal("eviRequestType");
+
+                // Expense amount (if with expense)
+                const expAmount = parseFloat(getVal("expenseAmount")) || 0;
+                formState.request.totalAmountRM = expAmount;
+
+                // Focus areas
+                const areas = [];
+                document.querySelectorAll(".focus-area-tag.selected").forEach(t => {
+                    areas.push(t.dataset.area);
+                });
+                formState.request.focusAreas = areas;
+
+                // purpose text
+                formState.request.purposeText =
+                    formState.request.eventDescription + " || " +
+                    formState.request.eventObjectives;
+
+            } else if (typeVal === "Donation") {
+                formState.request.requestorName = getVal("requestorName");
+                formState.request.requestorEmail = getVal("requestorEmail");
+
+                // donation items
+                formState.request.donationItems = [];
+                let total = 0;
+                document.querySelectorAll("#donationItemsBody tr").forEach(row => {
+                    const itemName = row.children[0].querySelector("input").value;
+                    const unitVal = parseFloat(row.children[1].querySelector("input").value) || 0;
+                    const qtyVal  = parseFloat(row.children[2].querySelector("input").value) || 0;
+                    const subtotal = unitVal * qtyVal;
+                    total += subtotal;
+                    if (itemName) {
+                        formState.request.donationItems.push({
+                            name: itemName,
+                            unitValue: unitVal,
+                            qty: qtyVal,
+                            total: subtotal
+                        });
+                    }
+                });
+                formState.request.totalAmountRM = total;
+
+                formState.request.purposeText =
+                    "In-kind / sponsorship donation request from " +
+                    formState.request.requestorName;
+
+            } else if (typeVal === "Donation (Financial Contribution)") {
+                formState.request.requestorName = getVal("requestorName");
+                formState.request.requestorEmail = getVal("requestorEmail");
+
+                const amount = parseFloat(getVal("donationAmount")) || 0;
+                formState.request.donationAmount = amount;
+                formState.request.totalAmountRM = amount;
+
+                formState.request.purposeText =
+                    "Direct financial contribution requested by " +
+                    formState.request.requestorName +
+                    " amount RM " +
+                    amount.toFixed(2);
+            }
+
+            // SDG alignment capture
+            formState.sdgGoals = [];
+            document.querySelectorAll(".sdg-tag.selected").forEach(tag => {
+                formState.sdgGoals.push(tag.dataset.sdg);
+            });
+
+            formState.impactCategory   = getVal("impactCategory");
+            formState.beneficiaryCount = getVal("beneficiaryCount");
+            formState.geographicArea   = getVal("geographicArea");
+            formState.duration         = getVal("duration");
+        }
+
+        function getVal(id) {
+            const el = document.getElementById(id);
+            return el ? el.value : "";
+        }
+
+        /******************************************************************
+         * PREVIEW (STEP 5)
+         ******************************************************************/
+        function generatePreview() {
+            captureChecklistState();
+            captureHistoryState();
+            captureRequestDetails();
+
+            // build preview HTML
+            const user = formState.user;
+            const req  = formState.request;
+
+            let sdgList = "";
+            if (formState.sdgGoals.length) {
+                sdgList = formState.sdgGoals.map(s => `<span style="display:inline-block; margin:2px 4px; font-size:.7rem; font-weight:600; background:rgba(0,0,0,0.4); border-radius:8px; padding:4px 8px; border:1px solid rgba(255,255,255,0.2);">${s}</span>`).join(" ");
+            } else {
+                sdgList = `<span style="color:var(--text-dim); font-size:.75rem;">(none selected)</span>`;
+            }
+
+            const histTotal = document.getElementById("historyTotal").textContent || "0.00";
+
+            const html = `
+                <div class="preview-block">
+                    <div>
+                        <div class="preview-section-title" style="color:var(--secondary-green);">👤 Submitter</div>
+                        <div class="preview-line"><strong>Name:</strong> ${user.fullName || ""}</div>
+                        <div class="preview-line"><strong>Company:</strong> ${user.company || ""}</div>
+                        <div class="preview-line"><strong>Email:</strong> ${user.email || ""}</div>
+                        <div class="preview-line"><strong>Role:</strong> ${user.role || ""}</div>
+                        <div class="preview-line"><strong>Approval Limit:</strong> RM ${(user.approvalLimit || 0).toLocaleString("en-MY",{minimumFractionDigits:2})}</div>
+                    </div>
+
+                    <div>
+                        <div class="preview-section-title" style="color:var(--accent-gold);">🎯 Request</div>
+                        <div class="preview-line"><strong>Type:</strong> ${req.requestType || ""}</div>
+                        ${req.eventName ? `<div class="preview-line"><strong>Event:</strong> ${req.eventName}</div>` : ""}
+                        ${req.eventDate ? `<div class="preview-line"><strong>Date:</strong> ${req.eventDate}</div>` : ""}
+                        ${req.eventLocation ? `<div class="preview-line"><strong>Location:</strong> ${req.eventLocation}</div>` : ""}
+                        <div class="preview-line"><strong>Amount / Value (RM):</strong> ${Number(req.totalAmountRM||0).toLocaleString("en-MY",{minimumFractionDigits:2})}</div>
+                        <div class="preview-line"><strong>Purpose / Description:</strong> ${req.purposeText || ""}</div>
+                        <div class="preview-line"><strong>Payee:</strong> ${req.accountHolderName || "(n/a)"} (${req.bankName || ""} ${req.bankAccountNumber || ""})</div>
+                    </div>
+
+                    <div>
+                        <div class="preview-section-title" style="color:var(--primary-green);">🌱 Impact / SDG</div>
+                        <div class="preview-line"><strong>SDGs:</strong> ${sdgList}</div>
+                        <div class="preview-line"><strong>Impact Category:</strong> ${formState.impactCategory || ""}</div>
+                        <div class="preview-line"><strong>Beneficiaries:</strong> ${formState.beneficiaryCount || ""}</div>
+                        <div class="preview-line"><strong>Geography:</strong> ${formState.geographicArea || ""}</div>
+                        <div class="preview-line"><strong>Duration:</strong> ${formState.duration || ""}</div>
+                    </div>
+
+                    <div>
+                        <div class="preview-section-title" style="color:var(--primary-blue);">📜 Governance</div>
+                        <div class="preview-line"><strong>Policy Acknowledged:</strong> ${formState.policyAcknowledged ? "Yes" : "No"}</div>
+                        <div class="preview-line"><strong>Checklist Completed:</strong> Yes</div>
+                        <div class="preview-line"><strong>Recurring Support Total (RM):</strong> ${histTotal}</div>
+                        <div class="preview-line"><strong>Docs Uploaded:</strong>
+                            HOD(${(formState.supportingDocuments.hod||[]).length}),
+                            EVI(${(formState.supportingDocuments.evi||[]).length}),
+                            Donation(${(formState.supportingDocuments.donation||[]).length}),
+                            Cash(${(formState.supportingDocuments.fc||[]).length})
+                        </div>
+                    </div>
+                </div>
+
+                <div class="highlight-badge">
+                    ✅ All compliance checkpoints captured<br/>
+                    📎 Supporting docs logged<br/>
+                    🔒 Submission will be locked and timestamped in master sheet<br/>
+                    📨 Email notification goes to the correct approver chain based on RM threshold
+                </div>
+            `;
+
+            document.getElementById("previewContent").innerHTML = html;
+        }
+
+        /******************************************************************
+         * SUBMISSION TO SERVER (Calls submitCSRRequest in Code.gs)
+         *
+         * Code.gs expects fields (mapped below):
+         * submitterName, designation, email, companyName, requestType,
+         * payeeName, payeeBank, payeeAccount, amountRequested,
+         * purpose, supportingDocuments, verificationChecklist,
+         * contributionHistory, policyAcknowledged, ipAddress,
+         * sdgGoals, impactAreas, etc.
+         ******************************************************************/
+        function buildSubmissionPayload() {
+          const u = formState.user;
+          const r = formState.request;
+
+          const impactAreas = r.focusAreas || [];
+
+          const payload = {
+              // CSR Rep info (the person filling the form)
+              csrRepName: u.fullName || "",
+              csrRepEmail: u.email || "",
+              csrRepCompany: u.company || "",
+              designation: u.designation || "",
+              
+              // Requester info (may be different from CSR Rep)
+              requesterName: document.getElementById("requesterName")?.value || u.fullName || "",
+              requesterEmail: document.getElementById("requesterEmail")?.value || u.email || "",
+              requesterContact: document.getElementById("requesterContact")?.value || "",
+              organizationName: document.getElementById("organizationName")?.value || "",
+              organizationNRIC: document.getElementById("organizationNRIC")?.value || "",
+              
+              // Original submitter fields (for backward compatibility)
+              submitterName: u.fullName || "",
+              email: u.email || "",
+              companyName: u.company || "",
+              
+              // Request details
+              requestType: r.requestType || "",
+              eventName: r.eventName || "",
+              eventDate: r.eventDate || "",
+              eventLocation: r.eventLocation || "",
+              eventFocusArea: r.focusArea || "",
+              eventDescription: r.eventDescription || "",
+              eventObjectives: r.eventObjectives || "",
+
+              // payee details
+              payeeName: r.accountHolderName || "",
+              payeeBank: r.bankName || "",
+              payeeAccount: r.bankAccountNumber || "",
+
+              // amount
+              amountRequested: r.totalAmountRM || 0,
+
+              // purpose
+              purpose: r.purposeText || "",
+
+              // docs
+              supportingDocuments: {
+                  hod: formState.supportingDocuments.hod || [],
+                  evi: formState.supportingDocuments.evi || [],
+                  donation: formState.supportingDocuments.donation || [],
+                  fc: formState.supportingDocuments.fc || []
+              },
+
+              // compliance checklist
+              verificationChecklist: formState.verificationChecklist || {},
+
+              // historical contribution
+              contributionHistory: formState.contributionHistory || [],
+
+              // governance metadata
+              policyAcknowledged: formState.policyAcknowledged ? "true" : "false",
+              ipAddress: "",
+
+              // SDG / impact block
+              sdgGoals: formState.sdgGoals || [],
+              impactAreas: impactAreas || [],
+
+              impactCategory: formState.impactCategory || "",
+              beneficiaryCount: formState.beneficiaryCount || "",
+              geographicArea: formState.geographicArea || "",
+              duration: formState.duration || ""
+          };
+
+          return payload;
+      }
+        function submitToServer() {
+            const submissionErrorBox = document.getElementById("submissionError");
+            submissionErrorBox.classList.remove("show");
+            submissionErrorBox.textContent = "";
+
+            showGlobalLoading();
+
+            const payload = buildSubmissionPayload();
+
+            google.script.run
+                .withSuccessHandler(res => {
+                    hideGlobalLoading();
+
+                    if (!res || !res.success) {
+                        submissionErrorBox.classList.add("show");
+                        submissionErrorBox.textContent = "Submission failed: " + (res && res.error ? res.error : "Unknown error");
+                        return;
+                    }
+
+                    // fill success card
+                    document.getElementById("successDetails").innerHTML = `
+                        <div><strong>Request ID:</strong> ${res.requestId || ""}</div>
+                        <div><strong>Status:</strong> Pending Verification</div>
+                        <div><strong>Workflow Stage:</strong> ${res.workflowStage || ""}</div>
+                        <div><strong>Next Approver:</strong> ${res.nextApprover || ""}</div>
+                        <div style="margin-top:8px;">${res.message || ""}</div>
+                    `;
+
+                    // Show email addresses
+                    const requesterEmail = document.getElementById("requesterEmail")?.value || formState.user.email;
+                    const csrEmail = formState.user.email;
+
+                    document.getElementById("successRequesterEmail").textContent = requesterEmail;
+                    document.getElementById("successCSREmail").textContent = csrEmail;
+
+                    // show success page
+                    goToStep("success");
+                })
+                .withFailureHandler(err => {
+                    hideGlobalLoading();
+                    submissionErrorBox.classList.add("show");
+                    submissionErrorBox.textContent = "Submission failed: " + err.message;
+                })
+                .submitCSRRequest(payload);
+        }
+
+        // LEGACY STUB - This function does nothing (history is now triggered by button click)
+        function loadContributionHistoryFromSheet() {
+            // This is intentionally empty - history lookup is triggered by the 
+            // "Check Contribution History" button in Section 4, not automatically
+            console.log("Note: loadContributionHistoryFromSheet is deprecated - use 'Check Contribution History' button");
+            return;
+        }
+
+        /******************************************************************
+         * GLOBAL LOADING OVERLAY
+         ******************************************************************/
+        function showGlobalLoading() {
+            const overlay = document.getElementById("globalLoading");
+            overlay.style.display = "flex";
+        }
+
+        function hideGlobalLoading() {
+            const overlay = document.getElementById("globalLoading");
+            overlay.style.display = "none";
+        }
+    </script>
+</body>
+</html>

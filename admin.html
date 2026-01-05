@@ -1,0 +1,3475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSR Admin Control Tower · Cahya Mata Sarawak Group</title>
+    
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <style>
+        /******************************************************************
+         * GLOBAL THEME / matches Index + Status
+         ******************************************************************/
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-green: #00b894;
+            --primary-blue: #0984e3;
+            --secondary-green: #00cec9;
+            --accent-gold: #fdcb6e;
+            --danger-red: #e17055;
+
+            --text-strong: rgba(255,255,255,0.95);
+            --text-mid: rgba(255,255,255,0.8);
+            --text-dim: rgba(255,255,255,0.6);
+
+            --surface-card: rgba(255,255,255,0.08);
+            --glass-bg: rgba(255,255,255,0.08);
+            --glass-stroke: rgba(255,255,255,0.18);
+
+            --gradient-primary: radial-gradient(circle at 20% 20%, #00b894 0%, #0984e3 40%, #6c5ce7 80%);
+            --gradient-secondary: linear-gradient(45deg, #00cec9 0%, #fdcb6e 100%);
+        }
+
+        body {
+            font-family: "Inter","Segoe UI",system-ui,-apple-system,BlinkMacSystemFont,Roboto,sans-serif;
+            background: var(--gradient-primary);
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: var(--text-strong);
+            overflow-x: hidden;
+        }
+
+        /******************************************************************
+         * Ambient glow particles (SDG aura / ESG feel)
+         ******************************************************************/
+        .particles-bg {
+            position: fixed;
+            z-index: -1;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0) 70%);
+            filter: blur(20px);
+            border-radius: 50%;
+            opacity: 0.15;
+            animation: float 8s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%,100% { transform: translateY(0px) rotate(0deg) scale(1); }
+            50%     { transform: translateY(-25px) rotate(20deg) scale(1.1); }
+        }
+
+        .particle:nth-child(1){ width:140px; height:140px; left:8%;  top:20%;  animation-delay:0s;}
+        .particle:nth-child(2){ width:200px; height:200px; left:18%; top:65%;  animation-delay:1s;}
+        .particle:nth-child(3){ width:160px; height:160px; left:42%; top:10%;  animation-delay:2.2s;}
+        .particle:nth-child(4){ width:200px; height:200px; left:58%; top:70%;  animation-delay:3.4s;}
+        .particle:nth-child(5){ width:170px; height:170px; left:78%; top:28%;  animation-delay:4.6s;}
+        .particle:nth-child(6){ width:140px; height:140px; left:82%; top:78%;  animation-delay:5.8s;}
+
+        /******************************************************************
+         * LAYOUT GRID
+         ******************************************************************/
+        .admin-shell {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            min-height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        /**************** Sidebar ****************/
+        .sidebar {
+            background: rgba(0,0,0,0.3);
+            border-right: 1px solid rgba(255,255,255,0.12);
+            backdrop-filter: blur(20px);
+            padding: 24px 20px 80px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            position: fixed;
+            height: 100vh;
+            width: 260px;
+            overflow-y: auto;
+        }
+
+        .sidebar-head {
+            text-align: center;
+        }
+
+        .sidebar-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            background: linear-gradient(90deg,#fff,#d9fff6 60%,#cde9ff 100%);
+            -webkit-background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.6);
+            margin-bottom: 4px;
+        }
+
+        .sidebar-sub {
+            font-size: .8rem;
+            font-weight: 400;
+            color: var(--text-mid);
+            line-height: 1.4;
+        }
+
+        .nav-menu {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.14);
+            border-radius: 14px;
+            padding: 14px 16px;
+            color: var(--text-mid);
+            font-size: .85rem;
+            font-weight: 500;
+            line-height: 1.2;
+            box-shadow:
+                0 20px 60px rgba(0,0,0,0.8),
+                0 2px 4px rgba(255,255,255,0.07) inset;
+            transition: .18s;
+        }
+
+        .nav-link .icon {
+            font-size: 1rem;
+            line-height: 1;
+        }
+
+        .nav-link.active,
+        .nav-link:hover {
+            background: var(--gradient-secondary);
+            border: 1px solid rgba(0,0,0,0.4);
+            color: #000;
+            box-shadow:
+                0 30px 100px rgba(0,0,0,0.9),
+                0 0 40px rgba(0,255,200,0.5),
+                0 2px 4px rgba(255,255,255,0.07) inset;
+            transform: translateX(3px) translateY(-1px) scale(1.01);
+        }
+
+        /**************** User card ****************/
+        .user-card {
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 16px;
+            padding: 16px;
+            font-size: .8rem;
+            box-shadow:
+                0 30px 100px rgba(0,0,0,0.9),
+                0 2px 4px rgba(255,255,255,0.06) inset;
+        }
+
+        .user-card-title {
+            font-weight: 600;
+            color: var(--text-strong);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .user-meta-line {
+            color: var(--text-mid);
+            line-height: 1.4;
+            font-size: .8rem;
+            word-break: break-word;
+        }
+
+        .role-chip {
+            display: inline-block;
+            margin-top: 10px;
+            font-size: .7rem;
+            font-weight: 600;
+            line-height: 1.2;
+            padding: 6px 10px;
+            border-radius: 10px;
+            background: var(--gradient-secondary);
+            color: #000;
+            box-shadow:
+                0 20px 60px rgba(0,0,0,0.8),
+                0 0 30px rgba(0,255,200,0.4);
+        }
+
+        /**************** Main column ****************/
+        .main-col {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            min-height: 100vh;
+            padding: 24px;
+            gap: 24px;
+            margin-left: 260px;
+        }
+
+        /**************** Page header / KPI ****************/
+        .page-header {
+            background: var(--surface-card);
+            border-radius: 24px;
+            border: 1px solid rgba(255,255,255,0.18);
+            padding: 24px;
+            position: relative;
+            box-shadow:
+                0 30px 120px rgba(0,0,0,0.7),
+                0 2px 4px rgba(255,255,255,0.08) inset;
+        }
+
+        .page-head-top-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .page-title-block {
+            min-width: 200px;
+        }
+
+        .page-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            background: linear-gradient(90deg,#fff,#d9fff6 60%,#cde9ff 100%);
+            -webkit-background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.6);
+            line-height: 1.3;
+            margin-bottom: 4px;
+        }
+
+        .page-sub {
+            font-size: .9rem;
+            line-height: 1.4;
+            color: var(--text-mid);
+        }
+
+        .refresh-block {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .btn {
+            position: relative;
+            appearance: none;
+            border: none;
+            border-radius: 14px;
+            font-size: .8rem;
+            font-weight: 600;
+            line-height: 1.2;
+            padding: 12px 14px;
+            min-width: 120px;
+            text-align: center;
+            cursor: pointer;
+            background: rgba(255,255,255,0.08);
+            color: var(--text-strong);
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow:
+                0 20px 60px rgba(0,0,0,0.9),
+                0 2px 4px rgba(255,255,255,0.07) inset;
+            transition: all .18s ease;
+        }
+
+        .btn-primary {
+            background: var(--gradient-secondary);
+            color: #000;
+            border: 1px solid rgba(0,0,0,0.4);
+            box-shadow:
+                0 30px 100px rgba(0,0,0,0.9),
+                0 0 40px rgba(0,255,200,0.5),
+                0 2px 4px rgba(255,255,255,0.07) inset;
+        }
+
+        .btn-danger {
+            background: var(--danger-red);
+            color: #fff;
+            border: 1px solid rgba(0,0,0,0.6);
+            box-shadow: 0 30px 80px rgba(225,112,85,0.9);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px) scale(1.02);
+            filter: brightness(1.08);
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit,minmax(min(240px,100%),1fr));
+            gap: 16px;
+            width: 100%;
+        }
+
+        .kpi-card {
+            border-radius: 20px;
+            background: rgba(255,255,255,0.07);
+            border:1px solid rgba(255,255,255,0.18);
+            padding: 24px 20px;
+            text-align: center;
+            box-shadow:
+                0 30px 100px rgba(0,0,0,0.9),
+                0 2px 4px rgba(255,255,255,0.06) inset;
+            transition: .18s;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 145px;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-3px) scale(1.01);
+            background: rgba(255,255,255,0.1);
+        }
+
+        .kpi-icon {
+            font-size: 2.2rem;
+            margin-bottom: 12px;
+            text-shadow: 0 20px 60px rgba(0,0,0,0.8);
+            line-height: 1;
+        }
+
+        .kpi-number {
+            font-size: 1.9rem;
+            font-weight: 700;
+            line-height: 1.2;
+            color: var(--text-strong);
+            margin-bottom: 8px;
+            word-break: break-word;
+            width: 100%;
+        }
+
+        .kpi-label {
+            font-size: .75rem;
+            color: var(--text-mid);
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: .04em;
+            line-height: 1.3;
+        }
+
+        /**************** Charts Container ****************/
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(400px,100%), 1fr));
+            gap: 24px;
+            margin-top: 24px;
+        }
+
+        .chart-card {
+            background: rgba(0,0,0,0.3);
+            border-radius: 24px;
+            border: 1px solid rgba(255,255,255,0.18);
+            padding: 24px;
+            box-shadow:
+                0 30px 120px rgba(0,0,0,0.9),
+                0 2px 4px rgba(255,255,255,0.07) inset;
+        }
+
+        .chart-card.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .chart-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-strong);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        .chart-container.tall {
+            height: 400px;
+        }
+
+        /**************** Filter + Table panel ****************/
+        .panel-card {
+            background: rgba(0,0,0,0.3);
+            border-radius: 24px;
+            border: 1px solid rgba(255,255,255,0.18);
+            padding: 24px;
+            box-shadow:
+                0 30px 120px rgba(0,0,0,0.9),
+                0 2px 4px rgba(255,255,255,0.07) inset;
+        }
+
+        .panel-head-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .panel-title-block {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .panel-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-strong);
+            line-height: 1.3;
+        }
+
+        .panel-sub {
+            font-size: .8rem;
+            color: var(--text-mid);
+            line-height: 1.4;
+        }
+
+        .filters-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .filter-input,
+        .filter-select {
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 2px solid rgba(255,255,255,0.18);
+            background: rgba(255,255,255,0.07);
+            color: var(--text-strong);
+            font-size: .8rem;
+            font-weight: 500;
+            line-height: 1.2;
+            min-width: 160px;
+            outline: none;
+            box-shadow:
+                0 16px 40px rgba(0,0,0,0.8),
+                0 2px 4px rgba(255,255,255,0.06) inset;
+        }
+
+        .filter-input::placeholder {
+            color: var(--text-dim);
+        }
+
+        .filter-input:focus,
+        .filter-select:focus {
+            border-color: var(--secondary-green);
+            box-shadow:
+                0 24px 60px rgba(0,0,0,0.9),
+                0 0 30px rgba(0,255,200,0.4),
+                0 2px 4px rgba(255,255,255,0.1) inset;
+            transform: translateY(-1px) scale(1.01);
+            background: rgba(255,255,255,0.1);
+        }
+
+        /**************** Data table ****************/
+        .table-shell {
+            width: 100%;
+            border-radius: 16px;
+            overflow-x: auto;
+            border: 1px solid rgba(255,255,255,0.18);
+            background: rgba(0,0,0,0.3);
+            box-shadow:
+                0 30px 100px rgba(0,0,0,0.9),
+                0 2px 4px rgba(255,255,255,0.06) inset;
+        }
+
+        table.data-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 680px;
+            font-size: .8rem;
+        }
+
+        .data-table thead th {
+            background: rgba(255,255,255,0.1);
+            color: var(--text-strong);
+            font-weight: 600;
+            text-align: left;
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.18);
+            text-transform: uppercase;
+            font-size: .7rem;
+            letter-spacing: .03em;
+        }
+
+        .data-table tbody td {
+            color: var(--text-mid);
+            padding: 14px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            vertical-align: top;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+
+        .data-table tbody tr:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .amount-cell {
+            font-weight: 600;
+            color: var(--accent-gold);
+        }
+
+        .amount-high {
+            color: var(--danger-red);
+        }
+
+        .status-chip {
+            padding: 6px 10px;
+            border-radius: 10px;
+            font-size: .7rem;
+            font-weight: 600;
+            line-height: 1.2;
+            display: inline-block;
+            text-transform: uppercase;
+            white-space: nowrap;
+            box-shadow:
+                0 20px 60px rgba(0,0,0,0.8),
+                0 0 30px rgba(0,255,200,0.4);
+        }
+
+        .status-pending {
+            background: linear-gradient(45deg,#fdcb6e,#e17055);
+            color: #000;
+            border: 1px solid rgba(0,0,0,0.4);
+        }
+
+        .status-approved {
+            background: var(--primary-green);
+            color: #000;
+            border: 1px solid rgba(0,0,0,0.6);
+            text-shadow: 0 0 8px rgba(0,0,0,0.6);
+            box-shadow:
+                0 30px 80px rgba(0,0,0,0.9),
+                0 0 40px rgba(0,255,170,0.5),
+                0 2px 4px rgba(255,255,255,0.08) inset;
+        }
+
+        .status-rejected {
+            background: var(--danger-red);
+            color: #fff;
+            border: 1px solid rgba(0,0,0,0.6);
+            box-shadow: 0 30px 80px rgba(225,112,85,0.9);
+        }
+
+        .status-forwarded {
+            background: var(--primary-blue);
+            color: #fff;
+            border: 1px solid rgba(0,0,0,0.6);
+        }
+
+        .impact-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            line-height: 1.2;
+        }
+
+        .impact-chip {
+            font-size: .65rem;
+            font-weight: 600;
+            line-height: 1.2;
+            padding: 6px 8px;
+            border-radius: 8px;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: var(--text-strong);
+            box-shadow:
+                0 20px 60px rgba(0,0,0,0.9),
+                0 0 30px rgba(0,255,200,0.3);
+        }
+
+        .impact-chip.sdg {
+            background: rgba(0,184,148,0.15);
+            border-color: rgba(0,0,0,0.5);
+            color: var(--primary-green);
+            text-shadow: 0 0 8px rgba(0,0,0,0.6);
+        }
+
+        .table-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .row-btn {
+            border: none;
+            border-radius: 10px;
+            font-size: .7rem;
+            font-weight: 600;
+            line-height: 1.2;
+            padding: 8px 10px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow:
+                0 20px 60px rgba(0,0,0,0.9),
+                0 2px 4px rgba(255,255,255,0.07) inset;
+        }
+
+        .row-view    { background: rgba(255,255,255,0.08); color: var(--text-strong); border:1px solid rgba(255,255,255,0.2);}
+        .row-forward { background: var(--accent-gold);    color:#000; border:1px solid rgba(0,0,0,0.5);}
+        .row-approve { background: var(--primary-green);  color:#000; border:1px solid rgba(0,0,0,0.5);}
+        .row-reject  { background: var(--danger-red);     color:#fff; border:1px solid rgba(0,0,0,0.6);}
+
+        .row-btn:hover {
+            transform: translateY(-2px) scale(1.02);
+        }
+
+        /**************** Loading / empty ****************/
+        .loading-block {
+            text-align: center;
+            color: var(--text-mid);
+            padding: 32px 16px;
+        }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid var(--primary-green);
+            margin: 0 auto 16px;
+            animation: spin 1s linear infinite;
+            box-shadow:
+                0 20px 60px rgba(0,0,0,0.9),
+                0 0 40px rgba(0,255,170,0.4);
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .empty-state {
+            text-align: center;
+            padding: 48px 16px;
+            color: var(--text-mid);
+        }
+
+        .empty-emoji {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+            text-shadow: 0 20px 60px rgba(0,0,0,0.8);
+        }
+
+        .empty-headline {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-strong);
+            margin-bottom: 6px;
+        }
+
+        .empty-desc {
+            font-size: .85rem;
+            line-height: 1.4;
+            color: var(--text-mid);
+            max-width: 360px;
+            margin: 0 auto;
+        }
+
+        /**************** Analytics section ****************/
+        .impact-summary-card {
+            background: rgba(0,0,0,0.3);
+            border-radius: 24px;
+            border: 1px solid rgba(255,255,255,0.18);
+            padding: 24px;
+            box-shadow:
+                0 30px 120px rgba(0,0,0,0.9),
+                0 2px 4px rgba(255,255,255,0.07) inset;
+        }
+
+        .section-page { display: none; }
+        #dashboard-section { display: block; }
+
+        /**************** Insights Panel ****************/
+        .insights-panel {
+            background: linear-gradient(135deg, rgba(0,184,148,0.1) 0%, rgba(9,132,227,0.1) 100%);
+            border-radius: 20px;
+            border: 1px solid rgba(0,184,148,0.3);
+            padding: 20px;
+            margin-top: 24px;
+        }
+
+        .insight-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            margin-bottom: 12px;
+        }
+
+        .insight-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .insight-text {
+            flex: 1;
+        }
+
+        .insight-title {
+            font-weight: 600;
+            color: var(--text-strong);
+            margin-bottom: 4px;
+        }
+
+        .insight-desc {
+            font-size: 0.85rem;
+            color: var(--text-mid);
+            line-height: 1.4;
+        }
+
+        /**************** Activity Feed ****************/
+        .activity-feed {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            display: flex;
+            gap: 12px;
+            padding: 12px;
+            border-left: 3px solid var(--primary-green);
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .activity-time {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            white-space: nowrap;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-weight: 600;
+            color: var(--text-strong);
+            font-size: 0.85rem;
+        }
+
+        .activity-desc {
+            font-size: 0.75rem;
+            color: var(--text-mid);
+            line-height: 1.4;
+        }
+
+        /**************** Modal ****************/
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .modal-overlay.show { display: flex; }
+
+        .modal-card {
+            width: 90%;
+            max-width: 640px;
+            max-height: 80vh;
+            overflow-y: auto;
+            border-radius: 24px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow:
+                0 40px 140px rgba(0,0,0,0.9),
+                0 2px 4px rgba(255,255,255,0.07) inset;
+            padding: 24px;
+        }
+
+        .modal-head {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-strong);
+            line-height: 1.3;
+            margin-bottom: 4px;
+        }
+
+        .modal-sub {
+            font-size: .8rem;
+            color: var(--text-mid);
+            line-height: 1.4;
+        }
+
+        .modal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit,minmax(min(240px,100%),1fr));
+            gap: 16px;
+            border-radius: 16px;
+            background: rgba(0,0,0,0.3);
+            border:1px solid rgba(255,255,255,0.18);
+            box-shadow:
+                0 30px 100px rgba(0,0,0,0.9),
+                0 2px 4px rgba(255,255,255,0.06) inset;
+            padding: 16px;
+            margin-bottom: 16px;
+            font-size: .8rem;
+            line-height: 1.4;
+        }
+
+        .modal-field-label {
+            color: var(--secondary-green);
+            font-weight: 600;
+            font-size: .75rem;
+            margin-bottom: 2px;
+        }
+
+        .modal-field-value {
+            color: var(--text-strong);
+        }
+
+        .modal-desc-block {
+            border-radius: 16px;
+            background: rgba(255,255,255,0.05);
+            border:1px solid rgba(255,255,255,0.12);
+            padding: 16px;
+            font-size: .8rem;
+            line-height: 1.5;
+            color: var(--text-mid);
+            margin-bottom: 16px;
+            box-shadow:
+                0 20px 80px rgba(0,0,0,0.9),
+                0 2px 4px rgba(255,255,255,0.07) inset;
+        }
+
+        .modal-desc-block strong {
+            color: var(--text-strong);
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: .8rem;
+            font-weight: 600;
+            color: var(--text-strong);
+            margin-bottom: 6px;
+        }
+
+        .form-textarea {
+            width: 100%;
+            min-height: 90px;
+            resize: vertical;
+            border-radius: 12px;
+            border:2px solid rgba(255,255,255,0.18);
+            background: rgba(255,255,255,0.07);
+            color: var(--text-strong);
+            font-size: .8rem;
+            line-height: 1.4;
+            padding: 12px;
+            box-shadow:
+                0 16px 40px rgba(0,0,0,0.8),
+                0 2px 4px rgba(255,255,255,0.06) inset;
+            outline: none;
+        }
+
+        .form-textarea::placeholder {
+            color: var(--text-dim);
+        }
+
+        .form-textarea:focus {
+            border-color: var(--secondary-green);
+            box-shadow:
+                0 24px 60px rgba(0,0,0,0.9),
+                0 0 30px rgba(0,255,200,0.4),
+                0 2px 4px rgba(255,255,255,0.1) inset;
+        }
+
+        .modal-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 16px;
+        }
+
+        /**************** Upload Section ****************/
+        .upload-section {
+            padding: 20px;
+            background: rgba(0,184,148,0.05);
+            border-radius: 16px;
+            border: 1px solid rgba(0,184,148,0.2);
+        }
+
+        .file-upload-zone {
+            border: 2px dashed rgba(0,184,148,0.4);
+            border-radius: 12px;
+            padding: 32px;
+            text-align: center;
+            background: rgba(255,255,255,0.05);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload-zone:hover {
+            border-color: var(--primary-green);
+            background: rgba(0,184,148,0.1);
+        }
+
+        .file-upload-zone.drag-over {
+            border-color: var(--accent-gold);
+            background: rgba(253,203,110,0.1);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .upload-text strong {
+            display: block;
+            font-size: 16px;
+            color: var(--text-strong);
+            margin-bottom: 4px;
+        }
+
+        .upload-text span {
+            display: block;
+            font-size: 14px;
+            color: var(--text-mid);
+        }
+
+        .upload-hint {
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-top: 8px;
+        }
+
+        .file-name-display {
+            padding: 12px 16px;
+            background: rgba(0,184,148,0.1);
+            border: 1px solid rgba(0,184,148,0.3);
+            border-radius: 8px;
+            margin-top: 12px;
+            font-size: 14px;
+            color: var(--text-strong);
+        }
+
+        .file-name-display::before {
+            content: "📄 ";
+        }
+
+        .progress-indicator {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background: rgba(9,132,227,0.1);
+            border-radius: 8px;
+            margin-top: 16px;
+        }
+
+        .progress-indicator .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(9,132,227,0.3);
+            border-top-color: var(--primary-blue);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .alert-block {
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 16px;
+            line-height: 1.5;
+        }
+
+        .alert-success {
+            background: rgba(39,174,96,0.1);
+            border: 1px solid rgba(39,174,96,0.3);
+            color: #27ae60;
+        }
+
+        .alert-error {
+            background: rgba(231,76,60,0.1);
+            border: 1px solid rgba(231,76,60,0.3);
+            color: #e74c3c;
+        }
+
+        @keyframes pulse {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.7; transform: scale(1.02); }
+        }
+
+        /**************** ENHANCED MOBILE RESPONSIVE ****************/
+
+      /* Mobile Navigation Toggle */
+      .mobile-menu-toggle {
+          display: none;
+          position: fixed;
+          top: 16px;
+          left: 16px;
+          z-index: 1000;
+          background: var(--surface-card);
+          border: 1px solid rgba(255,255,255,0.3);
+          border-radius: 12px;
+          padding: 12px;
+          cursor: pointer;
+          box-shadow: 0 8px 32px rgba(0,0,0,0.8);
+          backdrop-filter: blur(20px);
+      }
+
+      .mobile-menu-toggle span {
+          display: block;
+          width: 24px;
+          height: 2px;
+          background: var(--text-strong);
+          margin: 5px 0;
+          transition: 0.3s;
+          border-radius: 2px;
+      }
+
+      .sidebar.mobile-open {
+          display: flex !important;
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 280px;
+          height: 100vh;
+          z-index: 999;
+          animation: slideInLeft 0.3s ease;
+      }
+
+      @keyframes slideInLeft {
+          from { transform: translateX(-100%); }
+          to { transform: translateX(0); }
+      }
+
+      .mobile-overlay {
+          display: none;
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0,0,0,0.7);
+          z-index: 998;
+          backdrop-filter: blur(4px);
+      }
+
+      .mobile-overlay.active {
+          display: block;
+          animation: fadeIn 0.3s ease;
+      }
+
+      @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+      }
+
+      /* Tablet Breakpoint (max-width: 1024px) */
+      @media (max-width: 1024px) {
+          .admin-shell {
+              grid-template-columns: 220px 1fr;
+          }
+          
+          .sidebar {
+              padding: 20px 16px 60px;
+          }
+          
+          .main-col {
+              padding: 20px;
+              gap: 20px;
+          }
+          
+          .kpi-grid {
+              grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+              gap: 12px;
+          }
+          
+          .kpi-card {
+              min-height: 130px;
+              padding: 20px 16px;
+          }
+          
+          .kpi-icon {
+              font-size: 2rem;
+          }
+          
+          .kpi-number {
+              font-size: 1.8rem;
+          }
+          
+          .charts-grid {
+              grid-template-columns: 1fr;
+              gap: 20px;
+          }
+          
+          .chart-container {
+              height: 250px;
+          }
+          
+          .chart-container.tall {
+              height: 350px;
+          }
+      }
+
+      /* Mobile Breakpoint (max-width: 900px) */
+      @media (max-width: 900px) {
+          body {
+              overflow-x: hidden;
+          }
+          
+          .mobile-menu-toggle {
+              display: block;
+          }
+          
+          .admin-shell {
+              grid-template-columns: 1fr;
+          }
+          
+          .sidebar {
+              display: none;
+              padding: 20px 16px 80px;
+          }
+          
+          .main-col {
+              padding: 70px 16px 16px;
+              margin-left: 0;
+              gap: 20px;
+          }
+          
+          /* Page Header Mobile */
+          .page-header {
+              border-radius: 20px;
+              padding: 20px 16px;
+          }
+          
+          .page-head-top-row {
+              flex-direction: column;
+              gap: 12px;
+          }
+          
+          .page-title {
+              font-size: 1.2rem;
+          }
+          
+          .page-sub {
+              font-size: 0.85rem;
+          }
+          
+          .refresh-block {
+              width: 100%;
+              justify-content: flex-start;
+          }
+          
+          /* KPI Cards Mobile */
+          .kpi-grid {
+              grid-template-columns: repeat(2, 1fr);
+              gap: 10px;
+          }
+          
+          .kpi-card {
+              border-radius: 16px;
+              padding: 18px 14px;
+              min-height: 120px;
+          }
+          
+          .kpi-icon {
+              font-size: 1.8rem;
+              margin-bottom: 8px;
+          }
+          
+          .kpi-number {
+              font-size: 1.6rem;
+              margin-bottom: 4px;
+          }
+          
+          .kpi-label {
+              font-size: 0.7rem;
+          }
+          
+          /* Buttons Mobile */
+          .btn {
+              width: 100%;
+              min-width: auto;
+              padding: 12px 16px;
+              font-size: 0.85rem;
+          }
+          
+          /* Panel Cards Mobile */
+          .panel-card,
+          .impact-summary-card,
+          .chart-card {
+              border-radius: 18px;
+              padding: 18px 14px;
+          }
+          
+          .panel-head-row {
+              flex-direction: column;
+              align-items: flex-start;
+              gap: 12px;
+              margin-bottom: 16px;
+          }
+          
+          .panel-title {
+              font-size: 0.95rem;
+          }
+          
+          .panel-sub {
+              font-size: 0.75rem;
+          }
+          
+          /* Filters Mobile */
+          .filters-row {
+              flex-direction: column;
+              width: 100%;
+              gap: 10px;
+          }
+          
+          .filter-input,
+          .filter-select {
+              width: 100%;
+              min-width: auto;
+              padding: 11px 12px;
+              font-size: 0.85rem;
+          }
+          
+          /* Table Mobile - Horizontal Scroll */
+          .table-shell {
+              overflow-x: auto;
+              -webkit-overflow-scrolling: touch;
+              border-radius: 14px;
+          }
+          
+          table.data-table {
+              min-width: 600px;
+              font-size: 0.75rem;
+          }
+          
+          .data-table thead th {
+              padding: 10px 12px;
+              font-size: 0.65rem;
+              white-space: nowrap;
+          }
+          
+          .data-table tbody td {
+              padding: 12px;
+              font-size: 0.75rem;
+          }
+          
+          .table-actions {
+              flex-direction: column;
+              gap: 6px;
+              width: 100%;
+          }
+          
+          .row-btn {
+              width: 100%;
+              justify-content: center;
+              font-size: 0.7rem;
+              padding: 8px 10px;
+          }
+          
+          /* Status Badge Mobile */
+          .status-badge {
+              font-size: 0.65rem;
+              padding: 5px 8px;
+          }
+          
+          .impact-chip {
+              font-size: 0.65rem;
+              padding: 4px 8px;
+          }
+          
+          /* Charts Mobile */
+          .charts-grid {
+              grid-template-columns: 1fr;
+              gap: 16px;
+          }
+          
+          .chart-card {
+              padding: 18px 14px;
+          }
+          
+          .chart-title {
+              font-size: 0.9rem;
+              margin-bottom: 12px;
+          }
+          
+          .chart-container {
+              height: 220px;
+          }
+          
+          .chart-container.tall {
+              height: 300px;
+          }
+          
+          /* Insights Panel Mobile */
+          .insights-panel {
+              padding: 16px;
+              border-radius: 16px;
+          }
+          
+          .insight-item {
+              padding: 10px;
+              gap: 10px;
+          }
+          
+          .insight-icon {
+              font-size: 1.3rem;
+          }
+          
+          .insight-title {
+              font-size: 0.85rem;
+          }
+          
+          .insight-desc {
+              font-size: 0.75rem;
+          }
+          
+          /* Activity Feed Mobile */
+          .activity-feed {
+              max-height: 300px;
+          }
+          
+          .activity-item {
+              padding: 12px;
+              gap: 10px;
+          }
+          
+          .activity-time {
+              font-size: 0.7rem;
+          }
+          
+          .activity-title {
+              font-size: 0.85rem;
+          }
+          
+          .activity-desc {
+              font-size: 0.75rem;
+          }
+      }
+
+      /* Small Mobile Breakpoint (max-width: 480px) */
+      @media (max-width: 480px) {
+          .main-col {
+              padding: 70px 12px 12px;
+              gap: 16px;
+          }
+          
+          .page-header {
+              padding: 16px 12px;
+              border-radius: 16px;
+          }
+          
+          .page-title {
+              font-size: 1.1rem;
+          }
+          
+          /* Single Column KPI on Small Screens */
+          .kpi-grid {
+              grid-template-columns: 1fr;
+              gap: 10px;
+          }
+          
+          .kpi-card {
+              min-height: 100px;
+              padding: 16px 12px;
+          }
+          
+          .kpi-icon {
+              font-size: 1.6rem;
+          }
+          
+          .kpi-number {
+              font-size: 1.4rem;
+          }
+          
+          .kpi-label {
+              font-size: 0.7rem;
+          }
+          
+          /* Panel Cards Extra Small */
+          .panel-card,
+          .impact-summary-card,
+          .chart-card {
+              padding: 14px 10px;
+              border-radius: 14px;
+          }
+          
+          .panel-title {
+              font-size: 0.9rem;
+          }
+          
+          /* Buttons Extra Small */
+          .btn {
+              padding: 10px 14px;
+              font-size: 0.8rem;
+          }
+          
+          /* Table Extra Small */
+          table.data-table {
+              min-width: 500px;
+              font-size: 0.7rem;
+          }
+          
+          .data-table thead th {
+              padding: 8px 10px;
+              font-size: 0.6rem;
+          }
+          
+          .data-table tbody td {
+              padding: 10px;
+          }
+          
+          .row-btn {
+              font-size: 0.65rem;
+              padding: 7px 9px;
+          }
+          
+          /* Charts Extra Small */
+          .chart-container {
+              height: 200px;
+          }
+          
+          .chart-container.tall {
+              height: 280px;
+          }
+          
+          .chart-title {
+              font-size: 0.85rem;
+          }
+      }
+
+      /* Landscape Mobile Optimization */
+      @media (max-width: 900px) and (orientation: landscape) {
+          .main-col {
+              padding: 70px 20px 16px;
+          }
+          
+          .kpi-grid {
+              grid-template-columns: repeat(4, 1fr);
+              gap: 12px;
+          }
+          
+          .kpi-card {
+              min-height: 110px;
+          }
+          
+          .chart-container {
+              height: 180px;
+          }
+      }
+        /* 1) Fix the selector typo and remove the double offset */
+        .main-col {
+          display: flex;
+          flex-direction: column;
+          min-width: 0;
+          min-height: 100vh;
+          padding: 24px;
+          gap: 24px;
+          margin-left: 0; /* was 260px; remove the extra push */
+        }
+
+        /* 2) Let the grid actually lay out the sidebar in column 1 */
+        .sidebar {
+          position: sticky;   /* was fixed */
+          top: 0;
+          height: 100vh;
+          width: 100%;        /* grid column controls the width; no hard 260px needed here */
+          overflow-y: auto;
+        }
+
+        /* If you prefer to keep the explicit width inside the grid cell, this is fine: */
+        .admin-shell {
+          display: grid;
+          grid-template-columns: 260px 1fr; /* first col = sidebar */
+        }
+
+        /* 3) Make sure content in the header/card sits above any ornaments */
+        .page-header { position: relative; overflow: hidden; }
+        .page-header > * { position: relative; z-index: 2; }
+
+        /* Safety: neutralize any accidental pseudo-element “spine” layers */
+        .page-header::before,
+        .page-header::after,
+        .main-col::before,
+        .main-col::after {
+          content: none !important;
+        }
+
+        /* Raise button stack if needed */
+        .refresh-block .btn { position: relative; z-index: 3; }
+
+
+    </style>
+</head>
+<body>
+    <!-- background aura -->
+    <div class="particles-bg">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <div class="admin-shell">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-head">
+                <div class="sidebar-title">CSR Admin</div>
+                <div class="sidebar-sub">Cahya Mata Sarawak Group</div>
+            </div>
+
+            <ul class="nav-menu">
+                <li><a href="#" class="nav-link active" data-section="dashboard"><span class="icon">📊</span>Dashboard</a></li>
+                <li><a href="#" class="nav-link" data-section="pending"><span class="icon">⏳</span>Pending Approvals</a></li>
+                <li><a href="#" class="nav-link" data-section="analytics"><span class="icon">📈</span>Advanced Analytics</a></li>
+                <li><a href="#" class="nav-link" data-section="insights"><span class="icon">💡</span>AI Insights</a></li>
+                <li><a href="#" class="nav-link" data-section="activity"><span class="icon">📡</span>Live Activity</a></li>
+                <li><a href="?page=status" class="nav-link"><span class="icon">📋</span>Public Status View</a></li>
+                <li><a href="#" class="nav-link" data-section="settings"><span class="icon">⚙️</span>Settings</a></li>
+            </ul>
+
+            <div class="user-card">
+                <div class="user-card-title">
+                    <div>👤 Current User</div>
+                </div>
+                <div id="userName" class="user-meta-line">Loading…</div>
+                <div id="userEmail" class="user-meta-line">-</div>
+                <div id="userCompany" class="user-meta-line">-</div>
+                <div id="userRoleChip" class="role-chip">Role</div>
+            </div>
+        </aside>
+
+        <!-- Main -->
+        <main class="main-col">
+
+            <!-- DASHBOARD SECTION -->
+            <section id="dashboard-section" class="section-page">
+                <div class="page-header">
+                    <div class="page-head-top-row">
+                        <div class="page-title-block">
+                            <div class="page-title">CSR Control Tower</div>
+                            <div class="page-sub">
+                                Real-time visibility of CSR / Sponsorship / Donation requests.<br/>
+                                Mapped to SDG and ESG impact for governance and audit trail.
+                            </div>
+                        </div>
+
+                        <div class="refresh-block">
+                            <button class="btn btn-primary" id="btnRefreshAll">🔄 Refresh Data</button>
+                            <button class="btn btn-danger" id="btnExportCSV">⬇ Export CSV</button>
+                            <button class="btn" id="btnExportPDF">📄 Export Report</button>
+                        </div>
+                    </div>
+
+                    <div class="kpi-grid" id="kpiGrid">
+                        <div class="kpi-card" onclick="filterByStatus('all')">
+                            <div class="kpi-icon">📥</div>
+                            <div class="kpi-number" id="kpiTotalReq">-</div>
+                            <div class="kpi-label">Total Requests</div>
+                        </div>
+                        <div class="kpi-card" onclick="filterByStatus('pending')">
+                            <div class="kpi-icon">⏳</div>
+                            <div class="kpi-number" id="kpiPendingReq">-</div>
+                            <div class="kpi-label">Awaiting Action</div>
+                        </div>
+                        <div class="kpi-card" onclick="filterByStatus('approved')">
+                            <div class="kpi-icon">✅</div>
+                            <div class="kpi-number" id="kpiApprovedReq">-</div>
+                            <div class="kpi-label">Approved</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon">💰</div>
+                            <div class="kpi-number" id="kpiTotalValue">-</div>
+                            <div class="kpi-label">Total Value (RM)</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon">🏢</div>
+                            <div class="kpi-number" id="kpiCompanies">-</div>
+                            <div class="kpi-label">Active Companies</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon">📅</div>
+                            <div class="kpi-number" id="kpiThisMonth">-</div>
+                            <div class="kpi-label">This Month</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- QUICK INSIGHTS PANEL -->
+                <div class="insights-panel">
+                    <div style="font-weight:600;font-size:1rem;margin-bottom:16px;color:var(--text-strong);">
+                        🎯 Quick Insights
+                    </div>
+                    <div id="quickInsights">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- CHARTS SECTION -->
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <div class="chart-title">📊 SDG Spending Distribution</div>
+                        <div class="chart-container">
+                            <canvas id="sdgChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-title">📈 Monthly Trend</div>
+                        <div class="chart-container">
+                            <canvas id="trendChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card full-width">
+                        <div class="chart-title">🏢 Company Comparison</div>
+                        <div class="chart-container tall">
+                            <canvas id="companyChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-title">📋 Request Type Distribution</div>
+                        <div class="chart-container">
+                            <canvas id="typeChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-title">⏱️ Approval Timeline</div>
+                        <div class="chart-container">
+                            <canvas id="timelineChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TABLE / FILTER PANEL -->
+                <div class="panel-card">
+                    <div class="panel-head-row">
+                        <div class="panel-title-block">
+                            <div class="panel-title">🕒 Recent / Active Requests</div>
+                            <div class="panel-sub">
+                                Filter by approval stage, request type, company, or SDG focus.
+                                Click on charts above to drill down into specific categories.
+                            </div>
+                        </div>
+
+                        <div class="filters-row">
+                            <select class="filter-select" id="filterStatus">
+                                <option value="">All Stages</option>
+                                <option value="Pending Verification">Pending Verification</option>
+                                <option value="Pending GCC Approval">Pending GCC Approval</option>
+                                <option value="Pending GCCSO Approval">Pending GCCSO Approval</option>
+                                <option value="Approved">Approved</option>
+                                <option value="Rejected">Rejected</option>
+                            </select>
+
+                            <select class="filter-select" id="filterType">
+                                <option value="">All Types</option>
+                                <option value="Employee Volunteerism Initiative">EVI</option>
+                                <option value="Donation">Donation (In-kind)</option>
+                                <option value="Donation (Financial Contribution)">Financial Contribution</option>
+                            </select>
+
+                            <select class="filter-select" id="filterCompany">
+                                <option value="">All Companies</option>
+                                <!-- Populated dynamically -->
+                            </select>
+
+                            <select class="filter-select" id="filterSDG">
+                                <option value="">All SDG Focus</option>
+                                <option value="SDG 1 No Poverty">SDG 1 No Poverty</option>
+                                <option value="SDG 3 Good Health & Wellbeing">SDG 3 Health & Wellbeing</option>
+                                <option value="SDG 4 Quality Education">SDG 4 Quality Education</option>
+                                <option value="SDG 8 Decent Work & Economic Growth">SDG 8 Decent Work</option>
+                                <option value="SDG 11 Sustainable Cities & Communities">SDG 11 Cities</option>
+                                <option value="SDG 13 Climate Action">SDG 13 Climate Action</option>
+                                <option value="SDG 15 Life On Land">SDG 15 Life On Land</option>
+                            </select>
+
+                            <input class="filter-input" id="filterSearch" placeholder="🔎 Search ID / submitter / payee..." />
+                        </div>
+                    </div>
+
+                    <div id="requestsTableShell" class="table-shell">
+                        <div class="loading-block" id="requestsLoading">
+                            <div class="spinner"></div>
+                            <div style="font-size:.9rem; font-weight:500; color:var(--text-strong);">
+                                Loading secure CSR ledger…
+                            </div>
+                        </div>
+
+                        <table class="data-table" id="requestsTable" style="display:none;">
+                            <thead>
+                                <tr>
+                                    <th>Request ID</th>
+                                    <th>Submitter</th>
+                                    <th>Type</th>
+                                    <th>Amount (RM)</th>
+                                    <th>Stage</th>
+                                    <th>SDG / Impact</th>
+                                    <th>Updated</th>
+                                    <th style="min-width:140px;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="requestsTbody"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="empty-state" id="requestsEmpty" style="display:none;">
+                        <div class="empty-emoji">📋</div>
+                        <div class="empty-headline">No Requests Found</div>
+                        <div class="empty-desc">
+                            Nothing matches your current filters. Try broadening the filters or refreshing.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ADVANCED ANALYTICS SECTION -->
+            <section id="analytics-section" class="section-page">
+                <div class="page-header">
+                    <div class="page-head-top-row">
+                        <div class="page-title-block">
+                            <div class="page-title">📊 Advanced ESG / SDG Analytics</div>
+                            <div class="page-sub">
+                                Deep dive into SDG performance, company benchmarking, and impact measurement.
+                            </div>
+                        </div>
+                        <div class="refresh-block">
+                            <button class="btn btn-primary" id="btnRefreshAnalytics">📈 Recalculate</button>
+                            <button class="btn" id="btnExportSDG">⬇ Export SDG Snapshot</button>
+                        </div>
+                    </div>
+
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-icon">🌱</div>
+                            <div class="kpi-number" id="kpiSDG1">-</div>
+                            <div class="kpi-label">SDG1 / Poverty & Welfare</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon">🏥</div>
+                            <div class="kpi-number" id="kpiSDG3">-</div>
+                            <div class="kpi-label">SDG3 / Health & Wellbeing</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon">🎓</div>
+                            <div class="kpi-number" id="kpiSDG4">-</div>
+                            <div class="kpi-label">SDG4 / Education & Youth</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon">🌍</div>
+                            <div class="kpi-number" id="kpiSDG13">-</div>
+                            <div class="kpi-label">SDG13 / Climate Action</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DETAILED ANALYTICS CHARTS -->
+                <div class="charts-grid">
+                    <div class="chart-card full-width">
+                        <div class="chart-title">🎯 SDG Goal Breakdown with Targets</div>
+                        <div class="chart-container tall">
+                            <canvas id="sdgDetailChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-title">🏆 Top 10 Companies by CSR Spend</div>
+                        <div class="chart-container tall">
+                            <canvas id="topCompaniesChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-title">🌍 Geographic Distribution</div>
+                        <div class="chart-container tall">
+                            <canvas id="geoChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="impact-summary-card">
+                    <div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;margin-bottom:16px;">
+                        <div>
+                            <div style="font-size:1rem;font-weight:600;color:var(--text-strong);line-height:1.3;">
+                                SDG Distribution Heat
+                            </div>
+                            <div style="font-size:.8rem;color:var(--text-mid);line-height:1.4;">
+                                Where RM is flowing in the last loaded dataset.
+                            </div>
+                        </div>
+                        <div class="impact-badges" id="topSdgBadges">
+                            <!-- badges filled dynamically -->
+                        </div>
+                    </div>
+
+                    <div id="sdgSummaryText" style="font-size:.8rem;line-height:1.5;color:var(--text-mid);">
+                        <!-- summary paragraphs inserted dynamically -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- AI INSIGHTS SECTION -->
+            <section id="insights-section" class="section-page">
+                <div class="page-header">
+                    <div class="page-title">💡 AI-Powered Insights & Recommendations</div>
+                    <div class="page-sub">
+                        Intelligent analysis of your CSR portfolio with actionable recommendations
+                    </div>
+                </div>
+
+                <div class="impact-summary-card">
+                    <div style="font-weight:600;font-size:1rem;margin-bottom:16px;color:var(--text-strong);">
+                        🤖 Smart Recommendations
+                    </div>
+                    <div id="aiInsights">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-card full-width">
+                        <div class="chart-title">📉 Risk Analysis Dashboard</div>
+                        <div class="chart-container">
+                            <canvas id="riskChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-title">🎯 Goal Achievement Progress</div>
+                        <div class="chart-container">
+                            <canvas id="goalProgressChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-title">📊 Efficiency Metrics</div>
+                        <div class="chart-container">
+                            <canvas id="efficiencyChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- LIVE ACTIVITY SECTION -->
+            <section id="activity-section" class="section-page">
+                <div class="page-header">
+                    <div class="page-title">📡 Live Activity Feed</div>
+                    <div class="page-sub">
+                        Real-time updates on CSR requests, approvals, and system events
+                    </div>
+                </div>
+
+                <div class="impact-summary-card">
+                    <div class="activity-feed" id="activityFeed">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- SETTINGS PLACEHOLDER -->
+            <section id="settings-section" class="section-page">
+                <div class="page-header">
+                    <div class="page-title">Settings / Access Control</div>
+                    <div class="page-sub">
+                        Future: role-based routing, approver delegation, escalation matrix, audit log export.
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- APPROVAL / ROUTING MODAL -->
+    <div class="modal-overlay" id="approvalModal">
+        <div class="modal-card">
+            <div class="modal-head">
+                <div class="modal-title" id="modalTitle">Review Request</div>
+                <div class="modal-sub" id="modalReqId">Request ID: —</div>
+            </div>
+
+            <div class="modal-grid" id="modalGrid">
+                <!-- populated dynamically -->
+            </div>
+
+            <div class="modal-desc-block" id="modalDescBlock">
+                <!-- populated dynamically -->
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="approvalComments">Comments / Justification to Next Approver</label>
+                <textarea class="form-textarea" id="approvalComments" placeholder="State rationale, conditions, reputational risk notes, etc."></textarea>
+            </div>
+
+            <!-- PDF UPLOAD SECTION -->
+            <div id="uploadSection" class="upload-section" style="display: none;">
+                <div style="margin: 24px 0;"></div>
+                
+                <div style="margin-bottom: 16px;">
+                    <div style="font-weight:600;color:var(--text-strong);">📤 Upload Signed Approval PDF</div>
+                    <div style="font-size:0.8rem;color:var(--text-mid);margin-top:4px;">
+                        After collecting physical signatures, upload the signed PDF here to complete the approval process.
+                    </div>
+                </div>
+                
+                <div class="file-upload-zone" id="pdfDropZone">
+                    <input type="file" id="signedPdfFile" accept=".pdf" style="display: none;" />
+                    <label for="signedPdfFile" style="cursor:pointer;">
+                        <div class="upload-icon">📄</div>
+                        <div class="upload-text">
+                            <strong>Click to select signed PDF</strong>
+                            <span>or drag and drop here</span>
+                        </div>
+                        <div class="upload-hint">Only PDF files accepted (Max 10MB)</div>
+                    </label>
+                </div>
+                
+                <div id="pdfFileName" class="file-name-display" style="display: none;"></div>
+                
+                <button class="btn btn-primary" id="uploadPdfBtn" style="margin-top: 16px; display: none; width: 100%;" 
+                        onclick="uploadSignedPDF()">
+                    📤 Upload Signed PDF & Trigger Final Approvals
+                </button>
+                
+                <div id="uploadProgress" class="progress-indicator" style="display: none;">
+                    <div class="spinner"></div>
+                    <span>Uploading and processing...</span>
+                </div>
+                
+                <div id="uploadSuccess" class="alert-block alert-success" style="display: none;">
+                    <strong>✅ Upload Successful!</strong>
+                    <p style="margin: 8px 0 0 0;">
+                        Signed PDF uploaded. Approval emails sent to requester and GMD. 
+                        Google Drive folder created and shared.
+                    </p>
+                </div>
+                
+                <div id="uploadError" class="alert-block alert-error" style="display: none;"></div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn row-reject"  id="btnReject">❌ Reject</button>
+                <button class="btn row-forward" id="btnForward">📤 Forward</button>
+                <button class="btn row-approve" id="btnApprove">✅ Approve</button>
+                <button class="btn" style="background:rgba(255,255,255,0.2);color:var(--text-strong);" id="btnCancelModal">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /******************************************************************
+         * STATE
+         ******************************************************************/
+        let adminUser = null;
+        let allRequests = [];
+        let selectedRequestId = null;
+        let charts = {};
+
+        /******************************************************************
+         * INIT
+         ******************************************************************/
+        document.addEventListener("DOMContentLoaded", () => {
+            bindNav();
+            bindFilters();
+            bindHeaderButtons();
+            bindModalButtons();
+            setupUploadHandlers();
+            
+            // INITIAL LOAD - with fallback support
+            loadWithFallback();
+        });
+
+        /******************************************************************
+         * NAVIGATION BETWEEN SECTIONS
+         ******************************************************************/
+        function bindNav() {
+            document.querySelectorAll(".nav-link").forEach(link => {
+                if (!link.dataset.section) return;
+                link.addEventListener("click", e => {
+                    e.preventDefault();
+
+                    document.querySelectorAll(".nav-link").forEach(l => l.classList.remove("active"));
+                    link.classList.add("active");
+
+                    const section = link.dataset.section;
+                    showSection(section);
+
+                    if (section === "pending") {
+                        document.getElementById("filterStatus").value = "Pending Verification";
+                        applyFilters();
+                    } else if (section === "analytics") {
+                        updateAdvancedAnalytics();
+                    } else if (section === "insights") {
+                        generateAIInsights();
+                    } else if (section === "activity") {
+                        updateActivityFeed();
+                    }
+                });
+            });
+        }
+
+        function showSection(section) {
+            ["dashboard","analytics","insights","activity","settings","pending"].forEach(s => {
+                const secEl = document.getElementById(s+"-section");
+                if (secEl) {
+                    secEl.style.display = "none";
+                }
+            });
+
+            const targetSection = document.getElementById(section + "-section");
+            if (targetSection) {
+                targetSection.style.display = "block";
+            }
+
+            // Special handling for pending (uses dashboard)
+            if (section === "pending") {
+                document.getElementById("dashboard-section").style.display = "block";
+            }
+        }
+        /******************************************************************
+         * FALLBACK DEMO DATA (for testing when backend unavailable)
+         ******************************************************************/
+        function loadWithFallback() {
+            // Try Google Apps Script first
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+                loadUserAndData();
+            } else {
+                // Fallback to demo data
+                console.log("Google Apps Script not available - using demo data");
+                simulateDemoData();
+            }
+        }
+
+        function simulateDemoData() {
+            // Simulate user
+            adminUser = {
+                name: "Demo Admin",
+                email: "demo@cahyamata.com",
+                company: "Cahya Mata Sarawak",
+                role: "admin"
+            };
+            renderUserCard(adminUser);
+
+            // Generate demo requests
+            allRequests = [
+                {
+                    requestId: "CSR-2025-001",
+                    submitterName: "John Doe",
+                    submitterCompany: "CMS Cement",
+                    submitterEmail: "john@cmscement.com",
+                    amountRequested: 5000,
+                    totalAmount: 5000,
+                    status: "Pending Verification",
+                    requestType: "Donation",
+                    purpose: "Community development program",
+                    sdgGoals: ["SDG 4 Quality Education"],
+                    submissionDate: new Date().toISOString(),
+                    lastUpdated: new Date().toISOString()
+                },
+                {
+                    requestId: "CSR-2025-002",
+                    submitterName: "Jane Smith",
+                    submitterCompany: "CMS Quarries",
+                    submitterEmail: "jane@cmsquarries.com",
+                    amountRequested: 12000,
+                    totalAmount: 12000,
+                    status: "Approved",
+                    requestType: "Sponsorship",
+                    purpose: "Education sponsorship program",
+                    sdgGoals: ["SDG 4 Quality Education", "SDG 1 No Poverty"],
+                    submissionDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+                    lastUpdated: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
+                },
+                {
+                    requestId: "CSR-2025-003",
+                    submitterName: "Bob Johnson",
+                    submitterCompany: "CMS Cement",
+                    submitterEmail: "bob@cmscement.com",
+                    amountRequested: 8500,
+                    totalAmount: 8500,
+                    status: "GCC Review",
+                    requestType: "Donation",
+                    purpose: "Healthcare initiative",
+                    sdgGoals: ["SDG 3 Good Health & Wellbeing"],
+                    submissionDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+                    lastUpdated: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
+                }
+            ];
+
+            // Update all displays
+            setLoadingState(false);
+            applyFilters();
+            updateKPIs();
+            updateAnalyticsFromRequests();
+            createCharts();
+            generateQuickInsights();
+            populateCompanyFilter();
+        }
+
+
+
+        /******************************************************************
+         * LOAD USER, THEN REQUESTS
+         ******************************************************************/
+        function loadUserAndData() {
+          setLoadingState(true);
+          google.script.run
+            .withSuccessHandler(res => {
+              if (res && res.success && res.user) {
+                adminUser = res.user;
+                renderUserCard(adminUser);
+
+                // In parallel: dashboard and my requests
+                google.script.run
+                  .withSuccessHandler(dash => {
+                    if (dash && dash.success) applyDashboardPayload(dash);
+                    else setLoadingState(false);
+                  })
+                  .withFailureHandler(err => { console.error(err); setLoadingState(false); })
+                  .getDashboardData();
+
+                // Preferred new endpoint
+                google.script.run
+                  .withSuccessHandler(req => {
+                    allRequests = (req && req.success) ? (req.items || req.requests || []) : [];
+                    setLoadingState(false);
+                    applyFilters();
+                    updateKPIs();
+                    updateAnalyticsFromRequests();
+                    createCharts();
+                    generateQuickInsights();
+                    populateCompanyFilter();
+                  })
+                  .withFailureHandler(_ => {
+                    // Fallback to legacy getUserRequests(email)
+                    loadRequestsForEmail(adminUser.email || adminUser.userEmail || "");
+                  })
+                  .getMyRequests({});
+              } else {
+                console.error("getCurrentUser() failed", res);
+                setLoadingState(false);
+              }
+            })
+            .withFailureHandler(err => { console.error(err); setLoadingState(false); })
+            .getCurrentUser();
+        }
+
+        function loadRequestsForEmail(email) {
+          google.script.run
+            .withSuccessHandler(res => {
+              setLoadingState(false);
+              allRequests = (res && res.success) ? (res.requests || []) : [];
+              applyFilters();
+              updateKPIs();
+              updateAnalyticsFromRequests();
+              createCharts();
+              generateQuickInsights();
+              populateCompanyFilter();
+            })
+            .withFailureHandler(err => { console.error("getUserRequests error", err); setLoadingState(false); })
+            .getUserRequests(email);
+        }
+
+        /******************************************************************
+         * USER CARD
+         ******************************************************************/
+        function renderUserCard(user) {
+            document.getElementById("userName").textContent = user.name || "-";
+            document.getElementById("userEmail").textContent = user.email || "-";
+            document.getElementById("userCompany").textContent = user.company || "-";
+            document.getElementById("userRoleChip").textContent = prettifyRole(user.role);
+        }
+
+        function prettifyRole(role) {
+            if (!role) return "User";
+            switch(role){
+                case "gccTeam": return "GCC Reviewer";
+                case "headGCC": return "Head GCC";
+                case "gccso":   return "GMD Office / GCCSO";
+                default:        return role;
+            }
+        }
+
+        /******************************************************************
+         * FILTER CONTROLS
+         ******************************************************************/
+        function bindFilters() {
+            document.getElementById("filterStatus").addEventListener("change", applyFilters);
+            document.getElementById("filterType").addEventListener("change", applyFilters);
+            document.getElementById("filterCompany").addEventListener("change", applyFilters);
+            document.getElementById("filterSDG").addEventListener("change", applyFilters);
+            document.getElementById("filterSearch").addEventListener("input", applyFilters);
+        }
+
+        function applyFilters() {
+            const statusVal = valueOf("filterStatus");
+            const typeVal = valueOf("filterType");
+            const companyVal = valueOf("filterCompany");
+            const sdgVal = valueOf("filterSDG");
+            const searchVal = valueOf("filterSearch").toLowerCase();
+
+            let filtered = [...allRequests];
+
+            if (statusVal) {
+                filtered = filtered.filter(r => (r.status || "") === statusVal);
+            }
+            if (typeVal) {
+                filtered = filtered.filter(r => (r.requestType || "") === typeVal);
+            }
+            if (companyVal) {
+                filtered = filtered.filter(r => (r.submitterCompany || "") === companyVal);
+            }
+            if (sdgVal) {
+                filtered = filtered.filter(r => Array.isArray(r.sdgGoals) && r.sdgGoals.includes(sdgVal));
+            }
+            if (searchVal) {
+                filtered = filtered.filter(r => {
+                    const blob = [
+                        r.requestId,
+                        r.submitterName,
+                        r.submitterCompany,
+                        r.payeeName,
+                        r.purpose
+                    ].join(" ").toLowerCase();
+                    return blob.includes(searchVal);
+                });
+            }
+
+            renderRequestsTable(filtered);
+        }
+
+        function valueOf(id){
+            const el = document.getElementById(id);
+            return el ? el.value || "" : "";
+        }
+
+        function filterByStatus(status) {
+            const statusFilter = document.getElementById("filterStatus");
+            if (status === 'all') {
+                statusFilter.value = "";
+            } else if (status === 'pending') {
+                statusFilter.value = "Pending Verification";
+            } else if (status === 'approved') {
+                statusFilter.value = "Approved";
+            }
+            applyFilters();
+        }
+
+        function populateCompanyFilter() {
+            const companies = [...new Set(allRequests.map(r => r.submitterCompany).filter(c => c))];
+            const select = document.getElementById("filterCompany");
+            
+            // Clear existing options except first
+            while (select.options.length > 1) {
+                select.remove(1);
+            }
+            
+            companies.sort().forEach(company => {
+                const option = document.createElement("option");
+                option.value = company;
+                option.textContent = company;
+                select.appendChild(option);
+            });
+        }
+
+        /******************************************************************
+         * KPI CALC
+         ******************************************************************/
+        function updateKPIs() {
+            const total = allRequests.length;
+            let pending = 0;
+            let approved = 0;
+            let totalValue = 0;
+            const companies = new Set();
+            const thisMonth = new Date().getMonth();
+            let thisMonthCount = 0;
+
+            allRequests.forEach(r => {
+                const st = (r.status || "").toLowerCase();
+                const amt = parseFloat(r.amountRequested || r.totalAmount || 0) || 0;
+
+                totalValue += amt;
+                if (st.includes("pending")) pending++;
+                if (st.includes("approved")) approved++;
+                if (r.submitterCompany) companies.add(r.submitterCompany);
+                
+                // Check if this month
+                if (r.submissionDate) {
+                    const reqDate = new Date(r.submissionDate);
+                    if (reqDate.getMonth() === thisMonth) {
+                        thisMonthCount++;
+                    }
+                }
+            });
+
+            setText("kpiTotalReq", total || 0);
+            setText("kpiPendingReq", pending || 0);
+            setText("kpiApprovedReq", approved || 0);
+            setText("kpiTotalValue", formatCurrency(totalValue));
+            setText("kpiCompanies", companies.size || 0);
+            setText("kpiThisMonth", thisMonthCount || 0);
+        }
+
+        /******************************************************************
+         * QUICK INSIGHTS GENERATION
+         ******************************************************************/
+        function generateQuickInsights() {
+            const container = document.getElementById("quickInsights");
+            const insights = [];
+
+            // Top spending company
+            const companyTotals = {};
+            allRequests.forEach(r => {
+                const company = r.submitterCompany || "Unknown";
+                const amt = parseFloat(r.amountRequested || r.totalAmount || 0) || 0;
+                companyTotals[company] = (companyTotals[company] || 0) + amt;
+            });
+            
+            const topCompany = Object.entries(companyTotals).sort((a,b) => b[1] - a[1])[0];
+            if (topCompany) {
+                insights.push({
+                    icon: "🏆",
+                    title: "Top Contributor",
+                    desc: `${topCompany[0]} leads with ${formatCurrency(topCompany[1])} in CSR spending`
+                });
+            }
+
+            // Pending attention
+            const pending = allRequests.filter(r => (r.status || "").toLowerCase().includes("pending")).length;
+            if (pending > 5) {
+                insights.push({
+                    icon: "⚠️",
+                    title: "Action Required",
+                    desc: `${pending} requests pending review - attention needed to maintain workflow velocity`
+                });
+            }
+
+            // SDG focus
+            const sdgCounts = {};
+            allRequests.forEach(r => {
+                if (Array.isArray(r.sdgGoals)) {
+                    r.sdgGoals.forEach(sdg => {
+                        sdgCounts[sdg] = (sdgCounts[sdg] || 0) + 1;
+                    });
+                }
+            });
+            const topSDG = Object.entries(sdgCounts).sort((a,b) => b[1] - a[1])[0];
+            if (topSDG) {
+                insights.push({
+                    icon: "🎯",
+                    title: "SDG Focus",
+                    desc: `${topSDG[0]} is your most aligned goal with ${topSDG[1]} requests`
+                });
+            }
+
+            // Render insights
+            container.innerHTML = insights.map(ins => `
+                <div class="insight-item">
+                    <div class="insight-icon">${ins.icon}</div>
+                    <div class="insight-text">
+                        <div class="insight-title">${ins.title}</div>
+                        <div class="insight-desc">${ins.desc}</div>
+                    </div>
+                </div>
+            `).join("");
+        }
+
+        /******************************************************************
+         * CHARTS CREATION
+         ******************************************************************/
+        function createCharts(){
+          createSDGChart();
+          createTrendChart();
+          createCompanyChart();
+          createTypeChart();
+          createTimelineChart();
+        }
+
+        function chartDestroy(id){
+          if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+        }
+
+        function createSDGChart(){
+          const ctx = document.getElementById("sdgChart");
+          if (!ctx) return;
+          chartDestroy('sdgChart');
+          const totals = {};
+          allRequests.forEach(r=>{
+            const amt = parseFloat(r.amountRequested || r.totalAmount || 0) || 0;
+            (Array.isArray(r.sdgGoals) ? r.sdgGoals : []).forEach(s => { totals[s] = (totals[s]||0)+amt; });
+          });
+          const labels = Object.keys(totals);
+          const data = Object.values(totals);
+          charts.sdgChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: { labels, datasets: [{ data, borderWidth:2, borderColor:'rgba(0,0,0,0.3)',
+              backgroundColor:['#00b894','#0984e3','#6c5ce7','#fdcb6e','#e17055','#00cec9','#ff7675','#74b9ff']
+            }]},
+            options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ color:'rgba(255,255,255,0.9)'} } } }
+          });
+        }
+        function createTrendChart(){
+          const ctx = document.getElementById("trendChart");
+          if (!ctx) return;
+          chartDestroy('trendChart');
+          const buckets = {};
+          allRequests.forEach(r=>{
+            const d = new Date(r.submissionDate || r.lastUpdated || Date.now());
+            const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+            buckets[key] = (buckets[key]||0) + 1;
+          });
+          const labels = Object.keys(buckets).sort();
+          const data = labels.map(k => buckets[k]);
+          charts.trendChart = new Chart(ctx, {
+            type:'line',
+            data:{ labels, datasets:[{ label:'Requests', data, tension:.25 }]},
+            options:{ responsive:true, maintainAspectRatio:false, scales:{ x:{ ticks:{ color:'#dfe' }}, y:{ ticks:{ color:'#dfe' }}}}
+          });
+        }
+
+        function createCompanyChart(){
+          const ctx = document.getElementById("companyChart");
+          if (!ctx) return;
+          chartDestroy('companyChart');
+          const totals = {};
+          allRequests.forEach(r=>{
+            const company = r.submitterCompany || 'Unknown';
+            const amt = parseFloat(r.amountRequested || r.totalAmount || 0) || 0;
+            totals[company] = (totals[company]||0)+amt;
+          });
+          const entries = Object.entries(totals).sort((a,b)=>b[1]-a[1]).slice(0,12);
+          const labels = entries.map(e=>e[0]);
+          const data = entries.map(e=>e[1]);
+          charts.companyChart = new Chart(ctx, {
+            type:'bar',
+            data:{ labels, datasets:[{ label:'RM', data }]},
+            options:{ responsive:true, maintainAspectRatio:false, scales:{ x:{ ticks:{ color:'#dfe' }}, y:{ ticks:{ color:'#dfe' }}}}
+          });
+        }
+
+        function createTypeChart(){
+          const ctx = document.getElementById("typeChart");
+          if (!ctx) return;
+          chartDestroy('typeChart');
+          const types = {};
+          allRequests.forEach(r=>{ types[r.requestType || 'Unknown'] = (types[r.requestType || 'Unknown']||0)+1; });
+          const labels = Object.keys(types); const data = Object.values(types);
+          charts.typeChart = new Chart(ctx, {
+            type:'bar',
+            data:{ labels, datasets:[{ label:'Count', data }]},
+            options:{ responsive:true, maintainAspectRatio:false, scales:{ x:{ ticks:{ color:'#dfe' }}, y:{ ticks:{ color:'#dfe' }}}}
+          });
+        }
+
+        function createTimelineChart(){
+          const ctx = document.getElementById("timelineChart");
+          if (!ctx) return;
+          chartDestroy('timelineChart');
+          const stages = {};
+          allRequests.forEach(r=>{
+            const st = r.status || r.workflowStage || 'Pending';
+            stages[st] = (stages[st]||0)+1;
+          });
+          const labels = Object.keys(stages);
+          const data = Object.values(stages);
+          charts.timelineChart = new Chart(ctx, {
+            type:'bar',
+            data:{ labels, datasets:[{ label:'Requests', data }]},
+            options:{ responsive:true, maintainAspectRatio:false, scales:{ x:{ ticks:{ color:'#dfe' }}, y:{ ticks:{ color:'#dfe' }}}}
+          });
+        }
+
+        /******************************************************************
+         * ANALYTICS & AI INSIGHTS
+         ******************************************************************/
+        function updateAnalyticsFromRequests() {
+            const buckets = {
+                "SDG 1 No Poverty": 0,
+                "SDG 3 Good Health & Wellbeing": 0,
+                "SDG 4 Quality Education": 0,
+                "SDG 13 Climate Action": 0
+            };
+
+            const sdgTotalsAll = {};
+            allRequests.forEach(r => {
+                const amt = parseFloat(r.amountRequested || r.totalAmount || 0) || 0;
+                if (Array.isArray(r.sdgGoals)) {
+                    r.sdgGoals.forEach(sdg => {
+                        sdgTotalsAll[sdg] = (sdgTotalsAll[sdg] || 0) + amt;
+                        if (buckets[sdg] !== undefined) {
+                            buckets[sdg] += amt;
+                        }
+                    });
+                }
+            });
+
+            setText("kpiSDG1", formatCurrency(buckets["SDG 1 No Poverty"] || 0));
+            setText("kpiSDG3", formatCurrency(buckets["SDG 3 Good Health & Wellbeing"] || 0));
+            setText("kpiSDG4", formatCurrency(buckets["SDG 4 Quality Education"] || 0));
+            setText("kpiSDG13", formatCurrency(buckets["SDG 13 Climate Action"] || 0));
+
+            const sorted = Object.keys(sdgTotalsAll)
+                .map(k => ({ sdg:k, amount:sdgTotalsAll[k] }))
+                .sort((a,b) => b.amount - a.amount)
+                .slice(0,4);
+
+            const topBadgesContainer = document.getElementById("topSdgBadges");
+            topBadgesContainer.innerHTML = sorted.length
+              ? sorted.map(a => `<div class="impact-chip sdg">${escapeHTML(a.sdg)}</div>`).join("")
+              : `<div class="impact-chip">No SDG Data</div>`;
+
+            const para = sorted.length
+              ? sorted.map(a => {
+                    return `
+                        <div style="margin-bottom:12px;">
+                            <div style="font-weight:600;color:var(--text-strong);font-size:.8rem;line-height:1.4;">
+                                ${escapeHTML(a.sdg)} — ${formatCurrency(a.amount)}
+                            </div>
+                            <div style="font-size:.75rem;line-height:1.4;color:var(--text-mid);">
+                                This SDG is a significant spend focus. Review for reputational alignment,
+                                strategic CSR storytelling, and audit evidence.
+                            </div>
+                        </div>
+                    `;
+                }).join("")
+              : `<div style="font-size:.8rem;color:var(--text-mid);">No SDG breakdown available in current dataset.</div>`;
+
+            document.getElementById("sdgSummaryText").innerHTML = `
+                <div style="font-size:.75rem;color:var(--text-dim);line-height:1.4;margin-bottom:16px;">
+                    These amounts are calculated from loaded requests only (your view / your scope).
+                    They support Sustainability reporting, ESG disclosures and licence-to-operate narrative.
+                </div>
+                ${para}
+            `;
+        }
+
+        function updateAdvancedAnalytics() {
+            // Create advanced charts for analytics section
+            const ctx1 = document.getElementById("sdgDetailChart");
+            const ctx2 = document.getElementById("topCompaniesChart");
+            const ctx3 = document.getElementById("geoChart");
+
+            // SDG Detail Chart (same as main but different context)
+            if (charts.sdgDetailChart) charts.sdgDetailChart.destroy();
+            
+            const sdgTotals = {};
+            allRequests.forEach(r => {
+                const amt = parseFloat(r.amountRequested || r.totalAmount || 0) || 0;
+                if (Array.isArray(r.sdgGoals)) {
+                    r.sdgGoals.forEach(sdg => {
+                        sdgTotals[sdg] = (sdgTotals[sdg] || 0) + amt;
+                    });
+                }
+            });
+
+            charts.sdgDetailChart = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(sdgTotals),
+                    datasets: [{
+                        label: 'Total Spending (RM)',
+                        data: Object.values(sdgTotals),
+                        backgroundColor: '#00b894',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: 'rgba(255,255,255,0.8)' }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: 'rgba(255,255,255,0.6)' },
+                            grid: { color: 'rgba(255,255,255,0.1)' }
+                        },
+                        x: {
+                            ticks: { color: 'rgba(255,255,255,0.6)', maxRotation: 45, minRotation: 45 },
+                            grid: { color: 'rgba(255,255,255,0.1)' }
+                        }
+                    }
+                }
+            });
+
+            // Top Companies Chart
+            if (charts.topCompaniesChart) charts.topCompaniesChart.destroy();
+            
+            const companyTotals = {};
+            allRequests.forEach(r => {
+                const company = r.submitterCompany || "Unknown";
+                const amt = parseFloat(r.amountRequested || r.totalAmount || 0) || 0;
+                companyTotals[company] = (companyTotals[company] || 0) + amt;
+            });
+
+            const topCompanies = Object.entries(companyTotals).sort((a,b) => b[1] - a[1]).slice(0,10);
+
+            charts.topCompaniesChart = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: topCompanies.map(c => c[0]),
+                    datasets: [{
+                        label: 'CSR Spending (RM)',
+                        data: topCompanies.map(c => c[1]),
+                        backgroundColor: '#0984e3',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: {
+                            labels: { color: 'rgba(255,255,255,0.8)' }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: { color: 'rgba(255,255,255,0.6)' },
+                            grid: { color: 'rgba(255,255,255,0.1)' }
+                        },
+                        y: {
+                            ticks: { color: 'rgba(255,255,255,0.6)' },
+                            grid: { color: 'rgba(255,255,255,0.1)' }
+                        }
+                    }
+                }
+            });
+
+            // Geographic Chart
+            if (charts.geoChart) charts.geoChart.destroy();
+            
+            const geoCounts = {};
+            allRequests.forEach(r => {
+                const geo = r.geographicArea || "Unspecified";
+                geoCounts[geo] = (geoCounts[geo] || 0) + 1;
+            });
+
+            charts.geoChart = new Chart(ctx3, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(geoCounts),
+                    datasets: [{
+                        data: Object.values(geoCounts),
+                        backgroundColor: ['#00b894', '#0984e3', '#6c5ce7', '#fdcb6e', '#e17055'],
+                        borderWidth: 2,
+                        borderColor: 'rgba(0,0,0,0.3)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: 'rgba(255,255,255,0.8)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function generateAIInsights() {
+            const container = document.getElementById("aiInsights");
+            const insights = [];
+
+            // Calculate metrics
+            const totalAmount = allRequests.reduce((sum, r) => sum + (parseFloat(r.amountRequested || r.totalAmount || 0) || 0), 0);
+            const approved = allRequests.filter(r => (r.status || "").toLowerCase().includes("approved")).length;
+            const approvalRate = allRequests.length > 0 ? ((approved / allRequests.length) * 100).toFixed(1) : 0;
+
+            insights.push({
+                icon: "📊",
+                title: "Approval Efficiency",
+                desc: `Current approval rate is ${approvalRate}%. ${approvalRate > 80 ? "Excellent performance!" : "Consider streamlining the approval process for faster turnaround."}`
+            });
+
+            // SDG diversification
+            const sdgSet = new Set();
+            allRequests.forEach(r => {
+                if (Array.isArray(r.sdgGoals)) {
+                    r.sdgGoals.forEach(sdg => sdgSet.add(sdg));
+                }
+            });
+
+            insights.push({
+                icon: "🎯",
+                title: "SDG Portfolio Diversification",
+                desc: `You're covering ${sdgSet.size} different SDG goals. ${sdgSet.size < 5 ? "Consider diversifying to strengthen your ESG narrative." : "Great diversification across multiple impact areas!"}`
+            });
+
+            // Budget utilization
+            const avgAmount = totalAmount / (allRequests.length || 1);
+            insights.push({
+                icon: "💰",
+                title: "Budget Analysis",
+                desc: `Average request size is ${formatCurrency(avgAmount)}. Smaller, frequent grants can build stronger community relationships than fewer large donations.`
+            });
+
+            // Timeline insight
+            const pendingOld = allRequests.filter(r => {
+                if (!(r.status || "").toLowerCase().includes("pending")) return false;
+                if (!r.submissionDate) return false;
+                const days = (new Date() - new Date(r.submissionDate)) / (1000 * 60 * 60 * 24);
+                return days > 14;
+            });
+
+            if (pendingOld.length > 0) {
+                insights.push({
+                    icon: "⏰",
+                    title: "Aging Requests",
+                    desc: `${pendingOld.length} requests have been pending for more than 14 days. Consider expediting review to maintain stakeholder confidence.`
+                });
+            }
+
+            // Render
+            container.innerHTML = insights.map(ins => `
+                <div class="insight-item">
+                    <div class="insight-icon">${ins.icon}</div>
+                    <div class="insight-text">
+                        <div class="insight-title">${ins.title}</div>
+                        <div class="insight-desc">${ins.desc}</div>
+                    </div>
+                </div>
+            `).join("");
+
+            // Create AI charts
+            createRiskChart();
+            createGoalProgressChart();
+            createEfficiencyChart();
+        }
+
+        function createRiskChart() {
+            const ctx = document.getElementById("riskChart");
+            if (charts.riskChart) charts.riskChart.destroy();
+
+            // Mock risk data
+            const riskData = {
+                low: allRequests.filter(r => (parseFloat(r.amountRequested || 0) || 0) < 5000).length,
+                medium: allRequests.filter(r => {
+                    const amt = (parseFloat(r.amountRequested || 0) || 0);
+                    return amt >= 5000 && amt < 20000;
+                }).length,
+                high: allRequests.filter(r => (parseFloat(r.amountRequested || 0) || 0) >= 20000).length
+            };
+
+            charts.riskChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Low Risk (<RM5k)', 'Medium Risk (RM5k-20k)', 'High Risk (>RM20k)'],
+                    datasets: [{
+                        label: 'Number of Requests',
+                        data: [riskData.low, riskData.medium, riskData.high],
+                        backgroundColor: ['#00b894', '#fdcb6e', '#e17055'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: 'rgba(255,255,255,0.8)' } }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: 'rgba(255,255,255,0.6)', stepSize: 1 },
+                            grid: { color: 'rgba(255,255,255,0.1)' }
+                        },
+                        x: {
+                            ticks: { color: 'rgba(255,255,255,0.6)' },
+                            grid: { color: 'rgba(255,255,255,0.1)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createGoalProgressChart() {
+            const ctx = document.getElementById("goalProgressChart");
+            if (charts.goalProgressChart) charts.goalProgressChart.destroy();
+
+            // Mock goal progress
+            const goalData = {
+                labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+                actual: [65, 78, 82, 45],
+                target: [70, 75, 80, 85]
+            };
+
+            charts.goalProgressChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: goalData.labels,
+                    datasets: [{
+                        label: 'Actual',
+                        data: goalData.actual,
+                        borderColor: '#00b894',
+                        backgroundColor: 'rgba(0,184,148,0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Target',
+                        data: goalData.target,
+                        borderColor: '#fdcb6e',
+                        backgroundColor: 'rgba(253,203,110,0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        borderDash: [5, 5]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: 'rgba(255,255,255,0.8)' } }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { color: 'rgba(255,255,255,0.6)' },
+                            grid: { color: 'rgba(255,255,255,0.1)' }
+                        },
+                        x: {
+                            ticks: { color: 'rgba(255,255,255,0.6)' },
+                            grid: { color: 'rgba(255,255,255,0.1)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createEfficiencyChart() {
+            const ctx = document.getElementById("efficiencyChart");
+            if (charts.efficiencyChart) charts.efficiencyChart.destroy();
+
+            // Calculate efficiency metrics
+            const avgDaysToApproval = 12; // Mock data
+            const processingEfficiency = 85; // Mock percentage
+            const stakeholderSatisfaction = 92; // Mock percentage
+
+            charts.efficiencyChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Processing Speed', 'Approval Rate', 'Stakeholder Satisfaction', 'SDG Alignment', 'Budget Utilization'],
+                    datasets: [{
+                        label: 'Current Performance',
+                        data: [processingEfficiency, 78, stakeholderSatisfaction, 88, 75],
+                        backgroundColor: 'rgba(0,184,148,0.2)',
+                        borderColor: '#00b894',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: 'rgba(255,255,255,0.8)' } }
+                    },
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { color: 'rgba(255,255,255,0.6)', stepSize: 20 },
+                            grid: { color: 'rgba(255,255,255,0.1)' },
+                            pointLabels: { color: 'rgba(255,255,255,0.8)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateActivityFeed() {
+            const container = document.getElementById("activityFeed");
+            
+            // Get recent activities (sorted by date)
+            const activities = allRequests
+                .filter(r => r.lastUpdated)
+                .sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated))
+                .slice(0, 20)
+                .map(r => {
+                    const timeAgo = getTimeAgo(r.lastUpdated);
+                    const status = r.status || "Pending";
+                    const icon = status.toLowerCase().includes("approved") ? "✅" : 
+                                status.toLowerCase().includes("reject") ? "❌" :
+                                status.toLowerCase().includes("forward") ? "📤" : "⏳";
+                    
+                    return {
+                        time: timeAgo,
+                        icon: icon,
+                        title: `${r.requestId} - ${status}`,
+                        desc: `${r.submitterCompany || "Unknown Company"} • ${formatCurrency(parseFloat(r.amountRequested || 0) || 0)}`
+                    };
+                });
+
+            container.innerHTML = activities.length > 0 
+                ? activities.map(act => `
+                    <div class="activity-item">
+                        <div class="activity-time">${act.time}</div>
+                        <div style="font-size:1.5rem;">${act.icon}</div>
+                        <div class="activity-content">
+                            <div class="activity-title">${escapeHTML(act.title)}</div>
+                            <div class="activity-desc">${escapeHTML(act.desc)}</div>
+                        </div>
+                    </div>
+                `).join("")
+                : `<div class="empty-state">
+                    <div class="empty-emoji">📡</div>
+                    <div class="empty-headline">No Recent Activity</div>
+                    <div class="empty-desc">Activity will appear here as requests are processed</div>
+                </div>`;
+        }
+
+        function getTimeAgo(dateString) {
+            const now = new Date();
+            const past = new Date(dateString);
+            const diffMs = now - past;
+            const diffMins = Math.floor(diffMs / (1000 * 60));
+            const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+            if (diffMins < 60) return `${diffMins}m ago`;
+            if (diffHours < 24) return `${diffHours}h ago`;
+            return `${diffDays}d ago`;
+        }
+
+        /******************************************************************
+         * TABLE RENDER
+         ******************************************************************/
+        function renderRequestsTable(list){
+          const shell   = document.getElementById("requestsTableShell");
+          const spinner = document.getElementById("requestsLoading");
+          const table   = document.getElementById("requestsTable");
+          const tbody   = document.getElementById("requestsTbody");
+          const empty   = document.getElementById("requestsEmpty");
+
+          if (!shell || !spinner || !table || !tbody || !empty) return;
+
+          spinner.style.display = "none";
+          if (!Array.isArray(list) || list.length === 0) {
+            table.style.display = "none";
+            empty.style.display = "block";
+            tbody.innerHTML = "";
+            return;
+          }
+
+          empty.style.display = "none";
+          table.style.display = "table";
+          tbody.innerHTML = list.map(r => {
+            const amt = parseFloat(r.amountRequested || r.totalAmount || 0) || 0;
+            const stage = r.status || r.workflowStage || "-";
+            const sdg = (Array.isArray(r.sdgGoals) ? r.sdgGoals : []).map(s => `<span class="impact-chip sdg">${escapeHTML(s)}</span>`).join(" ");
+            const when = r.lastUpdated || r.submissionDate || "";
+            return `
+              <tr>
+                <td>${escapeHTML(r.requestId || "-")}</td>
+                <td>${escapeHTML(r.submitterName || r.requesterName || "-")}<br><span class="muted">${escapeHTML(r.submitterCompany || "-")}</span></td>
+                <td>${escapeHTML(r.requestType || "-")}</td>
+                <td class="amount-cell ${amt > 100000 ? 'amount-high' : ''}">${formatCurrency(amt)}</td>
+                <td><span class="status-chip ${statusClass(stage)}">${escapeHTML(stage)}</span></td>
+                <td><div class="impact-badges">${sdg || '-'}</div></td>
+                <td>${escapeHTML(when)}</td>
+                <td>
+                  <div class="table-actions">
+                    <button class="row-btn row-view"    onclick="openReviewModal('${escapeAttr(r.requestId || '')}')">View</button>
+                    <button class="row-btn row-forward" onclick="forwardRequest('${escapeAttr(r.requestId || '')}')">Forward</button>
+                    <button class="row-btn row-approve" onclick="approveRequest('${escapeAttr(r.requestId || '')}')">Approve</button>
+                    <button class="row-btn row-reject"  onclick="rejectRequest('${escapeAttr(r.requestId || '')}')">Reject</button>
+                  </div>
+                </td>
+              </tr>`;
+          }).join("");
+        }
+        function statusClass(stage){
+          const s = String(stage || "").toLowerCase();
+          if (s.includes("approved")) return "status-approved";
+          if (s.includes("reject"))   return "status-rejected";
+          if (s.includes("forward"))  return "status-forwarded";
+          return "status-pending";
+        }
+        function escapeHTML(s){ return String(s||"").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+        function escapeAttr(s){ return escapeHTML(s).replace(/"/g,'&quot;'); }
+
+        function actionButtonsFor(req) {
+          if (!adminUser) return "";
+          const role = adminUser.role || "";
+          
+          if (req.status === "Approved" && !req.signedPdfUploaded) {
+              return `<button class="row-btn" 
+                            style="background:var(--accent-gold);color:#000;" 
+                            onclick="openModal('${req.requestId}')">
+                          📤 Upload Signed PDF
+                      </button>`;
+          }
+
+          if (req.status === "Pending Verification" && role === "gccTeam") {
+              return `<button class="row-btn row-approve" onclick="openModal('${req.requestId}')">🔍 Review</button>`;
+          }
+          if (req.status === "Pending GCC Approval" && role === "headGCC") {
+              return `<button class="row-btn row-forward" onclick="openModal('${req.requestId}')">📤 Recommend</button>`;
+          }
+          if (req.status === "Pending GCCSO Approval" && role === "gccso") {
+              return `<button class="row-btn row-approve" onclick="openModal('${req.requestId}')">✅ Approve</button>`;
+          }
+
+          return `<button class="row-btn row-forward" onclick="openModal('${req.requestId}')">📤 Route</button>`;
+      }
+
+        function setLoadingState(isLoading) {
+            const table   = document.getElementById("requestsTable");
+            const loading = document.getElementById("requestsLoading");
+            const empty   = document.getElementById("requestsEmpty");
+            if (isLoading) {
+                table.style.display = "none";
+                empty.style.display = "none";
+                loading.style.display = "block";
+            } else {
+                loading.style.display = "none";
+            }
+        }
+
+        /******************************************************************
+         * HEADER BUTTONS
+         ******************************************************************/
+        function bindHeaderButtons() {
+          const btnRefresh = document.getElementById("btnRefreshAll");
+          const btnCSV     = document.getElementById("btnExportCSV");
+          const btnPDF     = document.getElementById("btnExportPDF");
+          const btnRecalc  = document.getElementById("btnRefreshAnalytics");
+          const btnSDG     = document.getElementById("btnExportSDG");
+
+          if (btnRefresh) btnRefresh.addEventListener("click", hardRefreshAll);
+          if (btnCSV)     btnCSV.addEventListener("click", onExportCSV);
+          if (btnPDF)     btnPDF.addEventListener("click", onExportReportPDF);
+          if (btnRecalc)  btnRecalc.addEventListener("click", () => {
+            updateAdvancedAnalytics();
+            alert("Analytics recalculated from currently loaded requests.");
+          });
+          if (btnSDG)     btnSDG.addEventListener("click", exportSDGData);
+        }
+
+        /* Unified refresh: pulls KPIs/SDG/recent + requests list */
+        function hardRefreshAll() {
+          setLoadingState(true);
+          if (typeof google !== 'undefined' && google.script && google.script.run) {
+            google.script.run
+              .withSuccessHandler(res => {
+                if (res && res.success) {
+                  applyDashboardPayload(res);
+                  if (adminUser && adminUser.email) {
+                    loadRequestsForEmail(adminUser.email);
+                  } else {
+                    loadUserAndData();
+                  }
+                } else {
+                  console.error("getDashboardData failed", res);
+                  setLoadingState(false);
+                }
+              })
+              .withFailureHandler(err => { console.error(err); setLoadingState(false); })
+              .getDashboardData();
+          } else {
+            // Optional: your local demo fallback
+            if (typeof simulateDemoData === 'function') simulateDemoData();
+            setLoadingState(false);
+          }
+        }
+
+        /* Server-backed CSV export (uses Code.gs exportCSV) */
+        function onExportCSV(){
+          if (!(google && google.script && google.script.run)) return;
+          google.script.run
+            .withSuccessHandler(res => {
+              if (res && res.success && res.url) {
+                window.open(res.url, "_blank");
+              } else {
+                alert(res && res.error || "Export failed");
+              }
+            })
+            .withFailureHandler(err => alert(err && err.message || "Export failed"))
+            .exportCSV();
+        }
+
+        /* Quick client-side report (print → Save as PDF). 
+          Swap this later if you add a server-side PDF report. */
+        function onExportReportPDF(){
+          window.print();
+        }
+
+        /* SDG analytics → CSV (client-side) */
+        function exportSDGData() {
+          const sdgTotals = {};
+          (allRequests || []).forEach(r => {
+            const amt = parseFloat(r.amountRequested || r.totalAmount || 0) || 0;
+            const goals = Array.isArray(r.sdgGoals) ? r.sdgGoals : [];
+            goals.forEach(sdg => { sdgTotals[sdg] = (sdgTotals[sdg] || 0) + amt; });
+          });
+
+          let csv = "SDG Goal,Total Amount (RM)\n";
+          Object.entries(sdgTotals).forEach(([sdg, amt]) => {
+            csv += `"${sdg.replace(/"/g,'""')}",${amt}\n`;
+          });
+
+          const blob = new Blob([csv], { type: "text/csv" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `SDG_Analytics_${new Date().toISOString().split('T')[0]}.csv`;
+          a.click();
+          URL.revokeObjectURL(url);
+        }
+        /******************************************************************
+         * MODAL
+         ******************************************************************/
+        function bindModalButtons(){
+          const closeBtn = document.getElementById("btnCancelModal");
+          if (closeBtn) closeBtn.addEventListener("click", closeReviewModal);
+          ["btnApprove","btnForward","btnReject"].forEach(id=>{
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.addEventListener("click", () => {
+              const cmt = document.getElementById("approvalComments").value || "";
+              if (id === "btnApprove") doApprove(selectedRequestId, cmt);
+              if (id === "btnForward") doForward(selectedRequestId, cmt);
+              if (id === "btnReject")  doReject(selectedRequestId, cmt);
+            });
+          });
+        }
+
+        function openReviewModal(requestId){
+          selectedRequestId = requestId;
+          const overlay = document.getElementById("approvalModal");
+          const title   = document.getElementById("modalTitle");
+          const rid     = document.getElementById("modalReqId");
+          const grid    = document.getElementById("modalGrid");
+          const desc    = document.getElementById("modalDescBlock");
+          if (!overlay || !grid) return;
+
+          const rec = (allRequests || []).find(r => (r.requestId === requestId));
+          rid.textContent = "Request ID: " + (requestId || "—");
+          title.textContent = "Review Request";
+          grid.innerHTML = `
+            ${modalField("Submitter",   rec && (rec.submitterName || rec.requesterName))}
+            ${modalField("Company",     rec && rec.submitterCompany)}
+            ${modalField("Type",        rec && rec.requestType)}
+            ${modalField("Amount (RM)", rec ? formatCurrency(parseFloat(rec.amountRequested||rec.totalAmount||0)||0) : "-")}
+            ${modalField("Status",      rec && (rec.status || rec.workflowStage))}
+            ${modalField("Updated",     rec && (rec.lastUpdated || rec.submissionDate))}
+            ${modalField("SDG",         Array.isArray(rec && rec.sdgGoals) ? rec.sdgGoals.join(", ") : "-")}
+          `;
+          desc.innerHTML = `
+            <strong>Purpose</strong><br>${escapeHTML(rec && rec.purpose || "-")}<br><br>
+            <strong>Description</strong><br>${escapeHTML(rec && rec.description || "-")}
+          `;
+          overlay.classList.add("show");
+        }
+
+        function closeReviewModal(){
+          const overlay = document.getElementById("approvalModal");
+          if (overlay) overlay.classList.remove("show");
+          selectedRequestId = null;
+        }
+
+        function modalField(label, val){
+          if (!val) val = "-";
+          return `<div><div class="modal-field-label">${escapeHTML(label)}</div><div class="modal-field-value">${escapeHTML(val)}</div></div>`;
+        }
+
+        // Server calls (swap names if yours differ)
+        function doApprove(requestId, comments){
+          if (!requestId) return;
+          google.script.run
+            .withSuccessHandler(_ => { closeReviewModal(); hardRefreshAll(); })
+            .withFailureHandler(err => alert(err && err.message || "Approve failed"))
+            .approveRequest(requestId, comments);
+        }
+        function doForward(requestId, comments){
+          if (!requestId) return;
+          google.script.run
+            .withSuccessHandler(_ => { closeReviewModal(); hardRefreshAll(); })
+            .withFailureHandler(err => alert(err && err.message || "Forward failed"))
+            .forwardRequest(requestId, comments);
+        }
+        function doReject(requestId, comments){
+          if (!requestId) return;
+          google.script.run
+            .withSuccessHandler(_ => { closeReviewModal(); hardRefreshAll(); })
+            .withFailureHandler(err => alert(err && err.message || "Reject failed"))
+            .rejectRequest(requestId, comments);
+        }
+
+        /******************************************************************
+         * PDF UPLOAD
+         ******************************************************************/
+        function setupUploadHandlers(){
+          const input = document.getElementById("signedPdfFile");
+          const dz    = document.getElementById("pdfDropZone");
+          const nameEl= document.getElementById("pdfFileName");
+          const upBtn = document.getElementById("uploadPdfBtn");
+
+          if (!input || !dz) return;
+
+          dz.addEventListener("click", () => input.click());
+          dz.addEventListener("dragover", e => { e.preventDefault(); dz.classList.add("drag-over"); });
+          dz.addEventListener("dragleave", ()=> dz.classList.remove("drag-over"));
+          dz.addEventListener("drop", e => {
+            e.preventDefault(); dz.classList.remove("drag-over");
+            const files = [...e.dataTransfer.files];
+            if (files[0] && files[0].type === "application/pdf") {
+              input.files = e.dataTransfer.files;
+              nameEl.style.display = "block";
+              nameEl.textContent = files[0].name;
+              upBtn.style.display = "block";
+            } else { alert("Please drop a PDF file"); }
+          });
+
+          input.addEventListener("change", e => {
+            const files = [...(e.target.files || [])];
+            if (files[0]) {
+              nameEl.style.display = "block";
+              nameEl.textContent = files[0].name;
+              upBtn.style.display = "block";
+            }
+          });
+        }
+
+        function handleFileSelection(file) {
+            if (file.type !== "application/pdf") {
+                showUploadError("Please select a PDF file only.");
+                return;
+            }
+            
+            if (file.size > 10 * 1024 * 1024) {
+                showUploadError("File size must be less than 10MB.");
+                return;
+            }
+            
+            document.getElementById("pdfFileName").textContent = file.name;
+            document.getElementById("pdfFileName").style.display = "block";
+            document.getElementById("uploadPdfBtn").style.display = "inline-block";
+            document.getElementById("uploadError").style.display = "none";
+            
+            window.selectedPdfFile = file;
+        }
+
+        function uploadSignedPDF(){
+          const input = document.getElementById("signedPdfFile");
+          const prog  = document.getElementById("uploadProgress");
+          const ok    = document.getElementById("uploadSuccess");
+          const errEl = document.getElementById("uploadError");
+          if (!selectedRequestId) return alert("Open a request first.");
+
+          const file = (input && input.files && input.files[0]) ? input.files[0] : null;
+          if (!file) return alert("Select a PDF first.");
+
+          prog.style.display = "flex"; ok.style.display = "none"; errEl.style.display = "none";
+
+          const fr = new FileReader();
+          fr.onload = function(){
+            const b64 = fr.result.split(",")[1];
+            google.script.run
+              .withSuccessHandler(res => {
+                prog.style.display = "none";
+                if (res && res.success) {
+                  ok.style.display = "block";
+                  hardRefreshAll();
+                } else {
+                  errEl.style.display = "block";
+                  errEl.textContent = res && res.error || "Upload failed";
+                }
+              })
+              .withFailureHandler(e => {
+                prog.style.display = "none";
+                errEl.style.display = "block";
+                errEl.textContent = e && e.message || "Upload failed";
+              })
+              .uploadSignedApprovalPDF(selectedRequestId, b64, file.name);
+          };
+          fr.readAsDataURL(file);
+        }
+
+        function showUploadError(message) {
+            const errorBox = document.getElementById("uploadError");
+            errorBox.textContent = message;
+            errorBox.style.display = "block";
+        }
+
+        /******************************************************************
+         * HELPERS
+         ******************************************************************/
+        function viewRequest(requestId) {
+            window.open(`?page=status&id=${encodeURIComponent(requestId)}`, "_blank");
+        }
+
+        function setText(id, text) {
+            const el = document.getElementById(id);
+            if (el) el.textContent = text;
+        }
+
+        function formatCurrency(n) {
+            const num = parseFloat(n || 0);
+            return "RM " + num.toLocaleString("en-MY", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+
+        function formatDateTime(val) {
+            if (!val) return "N/A";
+            try {
+                return new Date(val).toLocaleString("en-MY", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit"
+                });
+            } catch(e){ return val; }
+        }
+
+        function escapeHTML(str) {
+            if (str === undefined || str === null) return "";
+            return String(str).replace(/[&<>"']/g, s => {
+                switch(s){
+                    case "&": return "&amp;";
+                    case "<": return "&lt;";
+                    case ">": return "&gt;";
+                    case "\"": return "&quot;";
+                    case "'": return "&#39;";
+                }
+            });
+        }
+
+        function applyDashboardPayload(res){
+        try {
+            // KPIs
+            const s = res.stats || {};
+            setText("kpiTotalReq",  s.totalRequests || 0);
+            setText("kpiPendingReq",s.awaitingAction || 0);
+            setText("kpiApprovedReq",s.approved || 0);
+            setText("kpiTotalValue", formatCurrency(s.totalAmountRM || 0));
+            setText("kpiCompanies",  s.activeCompanies || 0);
+            setText("kpiThisMonth",  s.thisMonth || 0);
+
+            // SDG analytics / charts cache
+            window.__sdgSnapshot = res.sdg || res.sdgStats || {};
+            // Recent activity if your backend returned it
+            window.__recentActivity = res.recent || [];
+
+            // Refresh charts/insights
+            updateAnalyticsFromRequests(); // recompute from allRequests
+            createCharts();
+            generateQuickInsights();
+          } catch(e) {
+            console.error("applyDashboardPayload error", e);
+          } finally {
+            setLoadingState(false);
+          }
+        }
+
+        /**************** MOBILE MENU FUNCTIONALITY ****************/
+        (function initMobileMenu() {
+            // Create mobile menu toggle button
+            const mobileToggle = document.createElement('div');
+            mobileToggle.className = 'mobile-menu-toggle';
+            mobileToggle.innerHTML = `
+                <span></span>
+                <span></span>
+                <span></span>
+            `;
+            
+            // Create mobile overlay
+            const mobileOverlay = document.createElement('div');
+            mobileOverlay.className = 'mobile-overlay';
+            
+            // Add to body
+            document.body.appendChild(mobileToggle);
+            document.body.appendChild(mobileOverlay);
+            
+            const sidebar = document.querySelector('.sidebar');
+            
+            // Toggle menu
+            function toggleMenu() {
+                sidebar.classList.toggle('mobile-open');
+                mobileOverlay.classList.toggle('active');
+                document.body.style.overflow = sidebar.classList.contains('mobile-open') ? 'hidden' : '';
+            }
+            
+            // Click handlers
+            mobileToggle.addEventListener('click', toggleMenu);
+            mobileOverlay.addEventListener('click', toggleMenu);
+            
+            // Close menu on nav item click (mobile)
+            if (window.innerWidth <= 900) {
+                const navLinks = sidebar.querySelectorAll('.nav-link');
+                navLinks.forEach(link => {
+                    link.addEventListener('click', () => {
+                        if (sidebar.classList.contains('mobile-open')) {
+                            toggleMenu();
+                        }
+                    });
+                });
+            }
+            
+            // Handle resize
+            let resizeTimer;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => {
+                    if (window.innerWidth > 900) {
+                        sidebar.classList.remove('mobile-open');
+                        mobileOverlay.classList.remove('active');
+                        document.body.style.overflow = '';
+                    }
+                }, 250);
+            });
+        })();
+
+    </script>
+</body>
+</html>

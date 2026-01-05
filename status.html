@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CSR Request Status · Live Tracking Dashboard</title>
+
+    <style>
+        /******************************************************************
+         * GLOBAL VISUAL LANGUAGE (match Index.html / Admin.html)
+         ******************************************************************/
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-green: #00b894;
+            --primary-blue: #0984e3;
+            --secondary-green: #00cec9;
+            --accent-gold: #fdcb6e;
+            --danger-red: #e17055;
+
+            --surface-card: rgba(255,255,255,0.08);
+            --surface-card-strong: rgba(255,255,255,0.12);
+
+            --text-strong: rgba(255,255,255,0.95);
+            --text-mid: rgba(255,255,255,0.8);
+            --text-dim: rgba(255,255,255,0.6);
+
+            --glass-bg: rgba(255,255,255,0.08);
+            --glass-stroke: rgba(255,255,255,0.18);
+
+            --gradient-primary: radial-gradient(circle at 20% 20%, #00b894 0%, #0984e3 40%, #6c5ce7 80%);
+            --gradient-secondary: linear-gradient(45deg, #00cec9 0%, #fdcb6e 100%);
+        }
+
+        body {
+            font-family: "Inter","Segoe UI",system-ui,-apple-system,BlinkMacSystemFont,Roboto,sans-serif;
+            min-height: 100vh;
+            background: var(--gradient-primary);
+            background-attachment: fixed;
+            color: var(--text-strong);
+            position: relative;
+            overflow-x: hidden;
+            padding: 16px;
+        }
+
+        /******************************************************************
+         * Ambient SDG / ESG glow particles
+         ******************************************************************/
+        .particles-bg {
+            position: fixed;
+            z-index: -1;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0) 70%);
+            filter: blur(20px);
+            border-radius: 50%;
+            opacity: 0.15;
+            animation: float 8s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%,100% { transform: translateY(0px) rotate(0deg) scale(1); }
+            50%     { transform: translateY(-25px) rotate(20deg) scale(1.1); }
+        }
+
+        .particle:nth-child(1){ width:140px; height:140px; left:8%;  top:20%;  animation-delay:0s;}
+        .particle:nth-child(2){ width:200px; height:200px; left:18%; top:65%;  animation-delay:1s;}
+        .particle:nth-child(3){ width:160px; height:160px; left:42%; top:10%;  animation-delay:2.2s;}
+        .particle:nth-child(4){ width:200px; height:200px; left:58%; top:70%;  animation-delay:3.4s;}
+        .particle:nth-child(5){ width:170px; height:170px; left:78%; top:28%;  animation-delay:4.6s;}
+        .particle:nth-child(6){ width:140px; height:140px; left:82%; top:78%;  animation-delay:5.8s;}
+
+        /******************************************************************
+         * Layout containers
+         ******************************************************************/
+        .page-shell {
+            max-width: 1280px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-stroke);
+            border-radius: 24px;
+            box-shadow:
+                0 30px 120px rgba(0,0,0,0.6),
+                0 2px 4px rgba(255,255,255,0.08) inset;
+            margin-bottom: 24px;
+        }
+
+        .glass-card.tight {
+            border-radius: 20px;
+            margin-bottom: 16px;
+        }
+
+        /******************************************************************
+         * Header block
+         ******************************************************************/
+        .header-block {
+            padding: 24px;
+            text-align: center;
+            position: relative;
+            background: linear-gradient(145deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.05) 100%);
+            border-radius: 24px;
+            overflow: hidden;
+        }
+
+        .header-ring {
+            position: absolute;
+            inset: 0;
+            border-radius: 24px;
+            background: radial-gradient(circle at 50% 0%, rgba(253,203,110,0.2) 0%, rgba(0,0,0,0) 70%);
+            mix-blend-mode: screen;
+            pointer-events: none;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-mid);
+            text-decoration: none;
+            font-size: .8rem;
+            font-weight: 500;
+            margin-bottom: 12px;
+            transition: all .2s;
+        }
+
+        .back-link:hover {
+            color: var(--secondary-green);
+            transform: translateX(-4px);
+        }
+
+        .system-title {
+            font-size: 1.6rem;
+            font-weight: 600;
+            line-height: 1.2;
+            background: linear-gradient(90deg,#fff,#d9fff6 60%,#cde9ff 100%);
+            -webkit-background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.6);
+        }
+
+        .system-subtitle {
+            font-size: .9rem;
+            font-weight: 400;
+            color: var(--text-mid);
+            line-height: 1.4;
+            margin-top: 8px;
+        }
+
+        .system-subtitle strong {
+            color: var(--text-strong);
+            font-weight: 600;
+        }
+
+        /******************************************************************
+         * Search / filter row
+         ******************************************************************/
+        .search-shell {
+            padding: 20px 24px 24px;
+        }
+
+        .search-flex {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .search-input {
+            flex: 1 1 200px;
+            min-width: 0;
+            padding: 14px 16px;
+            font-size: .9rem;
+            font-weight: 500;
+            line-height: 1.4;
+            color: var(--text-strong);
+            border-radius: 14px;
+            border: 2px solid rgba(255,255,255,0.18);
+            background: rgba(255,255,255,0.07);
+            box-shadow:
+                0 16px 40px rgba(0,0,0,0.8),
+                0 2px 4px rgba(255,255,255,0.06) inset;
+            outline: none;
+            backdrop-filter: blur(10px);
+            width: 100%;
+        }
+
+        .search-input::placeholder {
+            color: var(--text-dim);
+        }
+
+        .search-input:focus {
+            border-color: var(--secondary-green);
+            box-shadow:
+                0 24px 60px rgba(0,0,0,0.9),
+                0 0 30px rgba(0,255,200,0.4),
+                0 2px 4px rgba(255,255,255,0.1) inset;
+            transform: translateY(-1px) scale(1.01);
+            background: rgba(255,255,255,0.1);
+        }
+
+        .btn {
+            appearance: none;
+            border: none;
+            border-radius: 14px;
+            font-size: .85rem;
+            font-weight: 600;
+            line-height: 1.2;
+            padding: 14px 16px;
+            min-width: 140px;
+            text-align: center;
+            cursor: pointer;
+            background: rgba(255,255,255,0.08);
+            color: var(--text-strong);
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow:
+                0 20px 60px rgba(0,0,0,0.9),
+                0 2px 4px rgba(255,255,255,0.07) inset;
+            transition: all .18s ease;
+            position: relative;
+            flex: 0 0 auto;
+        }
+
+        .btn-primary {
+            background: var(--gradient-secondary);
+            color: #000;
+            border: 1px solid rgba(0,0,0,0.4);
+            box-shadow:
+                0 30px 100px rgba(0,0,0,0.9),
+                0 0 40px rgba(0,255,200,0.5),
+                0 2px 4px rgba(255,255,255,0.07) inset;
+        }
+
+        .btn:hover {
+            filter: brightness(1.08);
+            transform: translateY(-2px) scale(1.01);
+        }
+
+        /******************************************************************
+         * Results list / cards
+         ******************************************************************/
+        .results-shell {
+            padding: 0 24px 24px;
+        }
+
+        .status-card {
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.18);
+            box-shadow:
+                0 30px 100px rgba(0,0,0,0.9),
+                0 2px 4px rgba(255,255,255,0.06) inset;
+            padding: 20px 20px 16px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .status-card-header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .request-id {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-strong);
+            line-height: 1.4;
+            word-break: break-word;
+        }
+
+        .status-badge {
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-size: .7rem;
+            font-weight: 600;
+            line-height: 1.2;
+            text-transform: uppercase;
+            box-shadow:
+                0 20px 60px rgba(0,0,0,0.8),
+                0 0 30px rgba(0,255,200,0.4);
+        }
+
+        .status-pending {
+            background: linear-gradient(45deg, #fdcb6e, #e17055);
+            color: #000;
+            border: 1px solid rgba(0,0,0,0.4);
+        }
+
+        .status-approved {
+            background: var(--primary-green);
+            color: #000;
+            border: 1px solid rgba(0,0,0,0.5);
+            text-shadow: 0 0 8px rgba(0,0,0,0.6);
+            box-shadow:
+                0 30px 80px rgba(0,0,0,0.9),
+                0 0 40px rgba(0,255,170,0.5),
+                0 2px 4px rgba(255,255,255,0.08) inset;
+        }
+
+        .status-rejected {
+            background: var(--danger-red);
+            color: #fff;
+            border: 1px solid rgba(0,0,0,0.6);
+            box-shadow: 0 30px 80px rgba(225,112,85,0.9);
+        }
+
+        /******************************************************************
+         * core info grid
+         ******************************************************************/
+        .status-details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit,minmax(min(220px,100%),1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .detail-block {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.4;
+        }
+
+        .detail-label {
+            font-size: .7rem;
+            font-weight: 500;
+            color: var(--text-dim);
+            margin-bottom: 4px;
+        }
+
+        .detail-value {
+            font-size: .9rem;
+            font-weight: 600;
+            color: var(--text-strong);
+            word-break: break-word;
+        }
+
+        /******************************************************************
+         * timeline
+         ******************************************************************/
+        .timeline-shell {
+            border-top: 1px solid rgba(255,255,255,0.12);
+            padding-top: 16px;
+        }
+
+        .timeline-title {
+            color: var(--text-strong);
+            font-size: .8rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .timeline-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .timeline-icon {
+            width: 32px;
+            height: 32px;
+            min-width: 32px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.18);
+            color: var(--text-strong);
+            font-size: .8rem;
+            font-weight: 600;
+            box-shadow:
+                0 20px 60px rgba(0,0,0,0.9),
+                0 2px 4px rgba(255,255,255,0.07) inset;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .timeline-icon.active {
+            background: var(--primary-green);
+            color: #000;
+            border: 1px solid rgba(0,0,0,0.6);
+            text-shadow: 0 0 8px rgba(0,0,0,0.6);
+            box-shadow:
+                0 30px 80px rgba(0,0,0,0.9),
+                0 0 40px rgba(0,255,170,0.5),
+                0 2px 4px rgba(255,255,255,0.08) inset;
+        }
+
+        .timeline-text {
+            font-size: .8rem;
+            color: var(--text-mid);
+            line-height: 1.4;
+        }
+
+        /******************************************************************
+         * loading / empty states / error
+         ******************************************************************/
+        .loading-block {
+            text-align: center;
+            color: var(--text-strong);
+            padding: 32px 16px;
+            display: none;
+        }
+
+        .loading-block.show {
+            display: block;
+        }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid var(--primary-green);
+            margin: 0 auto 16px;
+            animation: spin 1s linear infinite;
+            box-shadow:
+                0 20px 60px rgba(0,0,0,0.9),
+                0 0 40px rgba(0,255,170,0.4);
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 48px 16px;
+            color: var(--text-mid);
+        }
+
+        .empty-emoji {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+            text-shadow: 0 20px 60px rgba(0,0,0,0.8);
+        }
+
+        .empty-headline {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-strong);
+            margin-bottom: 6px;
+        }
+
+        .empty-desc {
+            font-size: .85rem;
+            line-height: 1.4;
+            color: var(--text-mid);
+            max-width: 360px;
+            margin: 0 auto;
+        }
+
+        /******************************************************************
+         * responsive tweaks
+         ******************************************************************/
+        @media(max-width:768px){
+            body { padding:16px 12px 80px; }
+            .glass-card { border-radius:20px; }
+            .header-block { border-radius:20px; padding:20px; }
+            .system-title { font-size:1.4rem; }
+            .search-flex { flex-direction:column; }
+            .btn { width:100%; }
+            .search-input { width:100%; }
+        }
+    </style>
+</head>
+<body>
+    <!-- floating ambience -->
+    <div class="particles-bg">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <div class="page-shell">
+
+        <!-- HEADER / BRAND -->
+        <div class="glass-card header-block">
+            <div class="header-ring"></div>
+
+            <a class="back-link" href="?page=home">
+                <span style="font-size:1rem; line-height:1;">←</span>
+                <span>Back to CSR Submission</span>
+            </a>
+
+            <div class="system-title">Request Status Tracker</div>
+            <div class="system-subtitle">
+                Live routing visibility for <strong>CSR / Sponsorship / Donation</strong> requests.
+                Track policy compliance, approver level and final approval.
+            </div>
+        </div>
+
+        <!-- SEARCH / FILTER PANEL -->
+        <div class="glass-card tight">
+            <div class="search-shell">
+                <div class="search-flex">
+                    <input
+                        id="searchInput"
+                        class="search-input"
+                        placeholder="Enter Request ID (e.g. CSR1735123456789)"
+                        autocomplete="off"
+                    />
+                    <button class="btn btn-primary" id="btnSearch">🔍 Search</button>
+                    <button class="btn" id="btnMine">📋 My Requests</button>
+                </div>
+            </div>
+
+            <!-- loading indicator -->
+            <div id="loadingBlock" class="loading-block">
+                <div class="spinner"></div>
+                <div style="font-size:.9rem; font-weight:500;">Looking up request in secure CSR ledger…</div>
+            </div>
+
+            <!-- RESULTS / LIST -->
+            <div class="results-shell" id="resultsShell">
+                <div class="empty-state" id="emptyState">
+                    <div class="empty-emoji">📊</div>
+                    <div class="empty-headline">Ready to Track Your Request</div>
+                    <div class="empty-desc">
+                        Enter a Request ID above or tap “My Requests” to see everything under your email.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /******************************************************************
+         * STATE
+         ******************************************************************/
+        let cachedUserEmail = null; // we'll fill this once from getCurrentUser()
+
+        /******************************************************************
+         * UTILITIES
+         ******************************************************************/
+        function showLoading() {
+            document.getElementById("loadingBlock").classList.add("show");
+        }
+
+        function hideLoading() {
+            document.getElementById("loadingBlock").classList.remove("show");
+        }
+
+        function clearResults() {
+            document.getElementById("resultsShell").innerHTML = "";
+        }
+
+        function formatDate(val) {
+            if (!val) return "N/A";
+            try {
+                return new Date(val).toLocaleString("en-MY", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit"
+                });
+            } catch(e) {
+                return val;
+            }
+        }
+
+        function formatAmount(num) {
+            if (!num && num !== 0) return "0.00";
+            const n = parseFloat(num);
+            if (isNaN(n)) return "0.00";
+            return n.toLocaleString("en-MY", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+
+        function getStatusClass(status="") {
+            const lower = status.toLowerCase();
+            if (lower.includes("approved")) return "status-approved";
+            if (lower.includes("reject")) return "status-rejected";
+            return "status-pending";
+        }
+
+        /******************************************************************
+         * TIMELINE BUILDER
+         ******************************************************************/
+        function buildTimeline(statusText) {
+          const st = (statusText || "").toLowerCase();
+
+          const submitted   = true;
+          const verification= /verify|verification/.test(st) ? false : true;
+          const gccReview   = /gcc/.test(st) || /head/.test(st) || /approved|rejected/.test(st);
+          const finalOk     = /approved/.test(st);
+
+          const steps = [
+              { label: "Submitted",           icon: "📝", active: submitted },
+              { label: "Under Verification",  icon: "🔍", active: verification },
+              { label: "GCC / Head Review",   icon: "👥", active: gccReview },
+              { label: "Final Approval",      icon: "✅", active: finalOk },
+          ];
+
+          let html = `
+              <div class="timeline-title">
+                  <span>📈</span>
+                  <span>Progress Timeline</span>
+              </div>
+          `;
+
+          steps.forEach(s => {
+              html += `
+                  <div class="timeline-step">
+                      <div class="timeline-icon ${s.active ? "active" : ""}">
+                          ${s.icon}
+                      </div>
+                      <div class="timeline-text">${s.label}</div>
+                  </div>
+              `;
+          });
+
+          return html;
+      }
+
+
+        /******************************************************************
+         * CARD RENDER
+         * matches formatRequestData() fields from Code.gs
+         ******************************************************************/
+        function renderStatusCard(req) {
+          const statusClass = getStatusClass(req.status || "");
+          const timelineHTML = buildTimeline(req.status || "");
+
+          // Build detail blocks and include Amount only when > 0
+          const blocks = [];
+
+          blocks.push(`
+            <div class="detail-block">
+              <div class="detail-label">Request Type</div>
+              <div class="detail-value">${req.requestType || "N/A"}</div>
+            </div>
+          `);
+
+          blocks.push(`
+            <div class="detail-block">
+              <div class="detail-label">Submitted On</div>
+              <div class="detail-value">${formatDate(req.submissionDate)}</div>
+            </div>
+          `);
+
+          const amt = parseFloat(req.amountRequested || 0);
+          if (!isNaN(amt) && amt > 0) {
+            blocks.push(`
+              <div class="detail-block">
+                <div class="detail-label">Requested Amount (RM)</div>
+                <div class="detail-value">RM ${formatAmount(amt)}</div>
+              </div>
+            `);
+          }
+
+          blocks.push(`
+            <div class="detail-block">
+              <div class="detail-label">Last Updated</div>
+              <div class="detail-value">${formatDate(req.lastUpdated)}</div>
+            </div>
+          `);
+
+          blocks.push(`
+            <div class="detail-block">
+              <div class="detail-label">Current Stage / Approver</div>
+              <div class="detail-value">
+                ${req.workflowStage || "—"}<br/>
+                <span style="font-size:.75rem; color:var(--text-dim);">
+                  ${req.currentApprover || ""}
+                </span>
+              </div>
+            </div>
+          `);
+
+          return `
+            <div class="status-card">
+              <div class="status-card-header">
+                <div class="request-id">${req.requestId || "—"}</div>
+                <div class="status-badge ${statusClass}">
+                  ${req.status || "Pending"}
+                </div>
+              </div>
+
+              <div class="status-details-grid">
+                ${blocks.join("")}
+              </div>
+
+              <div class="timeline-shell">
+                ${timelineHTML}
+              </div>
+            </div>
+          `;
+        }
+
+        /******************************************************************
+         * RENDER MULTIPLE REQUESTS (for "My Requests")
+         ******************************************************************/
+        function renderRequestsList(requests) {
+            if (!requests || !requests.length) {
+                return `
+                    <div class="empty-state">
+                        <div class="empty-emoji">📝</div>
+                        <div class="empty-headline">No Requests Found</div>
+                        <div class="empty-desc">
+                            You have not submitted any CSR / Sponsorship / Donation requests yet.
+                        </div>
+                    </div>
+                `;
+            }
+
+            let html = `
+                <div style="font-size:.9rem;font-weight:600;color:var(--text-strong);margin-bottom:12px;
+                    display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                    <span>📋</span>
+                    <span>Your CSR Requests</span>
+                </div>
+            `;
+
+            requests.forEach(r => {
+                html += renderStatusCard(r);
+            });
+            return html;
+        }
+
+        /******************************************************************
+         * DATA FETCH FLOW
+         ******************************************************************/
+
+        // 1. SEARCH BY ID
+        // Calls getRequestDetails(requestId) in Code.gs
+        function doSearch() {
+          const idVal = document.getElementById("searchInput").value.trim();
+          if (!idVal) {
+              alert("Please enter a Request ID.");
+              return;
+          }
+
+          if (!(google && google.script && google.script.run)) {
+              document.getElementById("resultsShell").innerHTML = `
+                  <div class="empty-state">
+                      <div class="empty-emoji">⚠️</div>
+                      <div class="empty-headline">Not Running in Apps Script</div>
+                      <div class="empty-desc">
+                          Please open this page via the official CSR web app link.
+                      </div>
+                  </div>
+              `;
+              return;
+          }
+
+          showLoading();
+          clearResults();
+
+          google.script.run
+                .withSuccessHandler(res => {
+                    hideLoading();
+                    if (res && res.success) {
+                        const mapped = mapDetailsToCard(res.request);
+                        document.getElementById("resultsShell").innerHTML = renderStatusCard(mapped);
+                    } else {
+                        document.getElementById("resultsShell").innerHTML = `
+                            <div class="empty-state">
+                                <div class="empty-emoji">❌</div>
+                                <div class="empty-headline">Request Not Found</div>
+                                <div class="empty-desc">
+                                    ${res && res.error ? res.error : "No record found for that ID."}
+                                </div>
+                            </div>
+                        `;
+                    }
+                })
+                .withFailureHandler(err => {
+                    hideLoading();
+                    document.getElementById("resultsShell").innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-emoji">⚠️</div>
+                            <div class="empty-headline">Search Error</div>
+                            <div class="empty-desc">
+                                Unable to retrieve request. ${err && err.message ? err.message : ""}
+                            </div>
+                        </div>
+                    `;
+                })
+                .getRequestDetails(idVal);
+        }
+
+        // 2. LOAD "MY REQUESTS"
+        // We first getCurrentUser() → we pull their email → we pass that to getUserRequests(email)
+        function loadMine() {
+          if (!(google && google.script && google.script.run)) {
+              document.getElementById("resultsShell").innerHTML = `
+                  <div class="empty-state">
+                      <div class="empty-emoji">⚠️</div>
+                      <div class="empty-headline">Not Running in Apps Script</div>
+                      <div class="empty-desc">
+                          Please open this page via the official CSR web app link.
+                      </div>
+                  </div>
+              `;
+              return;
+          }
+
+          showLoading();
+          clearResults();
+
+          // Step A: ensure we know the logged-in email
+          google.script.run
+                .withSuccessHandler(userRes => {
+                    if (!userRes || !userRes.success || !userRes.user) {
+                        hideLoading();
+                        document.getElementById("resultsShell").innerHTML = `
+                            <div class="empty-state">
+                                <div class="empty-emoji">⚠️</div>
+                                <div class="empty-headline">Cannot Load User</div>
+                                <div class="empty-desc">
+                                    We could not identify your account. Are you logged in?
+                                </div>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    const email =
+                        userRes.user.email ||
+                        userRes.user.userEmail ||
+                        userRes.userEmail ||
+                        "";
+
+                    cachedUserEmail = email;
+
+                    // Step B: pull all requests for that email
+                    google.script.run
+                        .withSuccessHandler(reqRes => {
+                            hideLoading();
+                            if (reqRes && reqRes.success) {
+                                const listHTML = renderRequestsList(reqRes.requests || []);
+                                document.getElementById("resultsShell").innerHTML = listHTML;
+                            } else {
+                                document.getElementById("resultsShell").innerHTML = `
+                                    <div class="empty-state">
+                                        <div class="empty-emoji">❌</div>
+                                        <div class="empty-headline">No Data</div>
+                                        <div class="empty-desc">
+                                            ${
+                                                reqRes && reqRes.error
+                                                    ? reqRes.error
+                                                    : "No CSR requests found for your email."
+                                            }
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                        })
+                        .withFailureHandler(err => {
+                            hideLoading();
+                            document.getElementById("resultsShell").innerHTML = `
+                                <div class="empty-state">
+                                    <div class="empty-emoji">⚠️</div>
+                                    <div class="empty-headline">Request Retrieval Error</div>
+                                    <div class="empty-desc">
+                                        Unable to retrieve your CSR requests.
+                                        ${err && err.message ? err.message : ""}
+                                    </div>
+                                </div>
+                            `;
+                        })
+                        .getUserRequests(email);
+                })
+                .withFailureHandler(err => {
+                    hideLoading();
+                    document.getElementById("resultsShell").innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-emoji">⚠️</div>
+                            <div class="empty-headline">User Lookup Failed</div>
+                            <div class="empty-desc">
+                                Could not confirm your identity to show your requests.
+                                ${err && err.message ? err.message : ""}
+                            </div>
+                        </div>
+                    `;
+                })
+                .getCurrentUser();
+        }
+
+        /******************************************************************
+         * SMALL MAPPERS / HELPERS
+         ******************************************************************/
+
+        // getRequestDetails() returns a richer object than formatRequestData,
+        // but we only need the core fields we render in the card.
+        function mapDetailsToCard(details) {
+            // try to fall back gracefully if some fields aren't present
+            return {
+                requestId: details.requestId || details.id || "",
+                requestType: details.requestType || "",
+                submissionDate: details.submissionDate || "",
+                amountRequested: details.amountRequested || details.totalAmount || 0,
+                lastUpdated: details.lastUpdated || details.updatedAt || "",
+                status: details.status || "",
+                workflowStage: details.workflowStage || "",
+                currentApprover: details.currentApprover || details.assignedTo || ""
+            };
+        }
+
+        /******************************************************************
+         * BIND UI EVENTS
+         ******************************************************************/
+        document.addEventListener("DOMContentLoaded", () => {
+          const input = document.getElementById("searchInput");
+          const btnSearch = document.getElementById("btnSearch");
+          const btnMine = document.getElementById("btnMine");
+
+          // autofocus
+          input.focus();
+
+          // enter submits search (debounced)
+          let debounce;
+          input.addEventListener("keypress", e => {
+              if (e.key === "Enter") {
+                  clearTimeout(debounce);
+                  debounce = setTimeout(doSearch, 80);
+              }
+          });
+
+          btnSearch.addEventListener("click", () => {
+              doSearch();
+          });
+
+          btnMine.addEventListener("click", () => {
+              loadMine();
+          });
+
+          // --- NEW: auto-load if requestId present in URL ---
+          const params = new URLSearchParams(location.search);
+          const rid = params.get("requestId") || params.get("id") || "";
+          if (rid) {
+              input.value = rid;
+              doSearch();
+          }
+      });
+
+    </script>
+</body>
+</html>
