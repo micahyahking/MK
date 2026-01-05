@@ -70,7 +70,13 @@ var CONFIG = {
   },
   
   DRIVE_FOLDER: {
-    PARENT_FOLDER_ID: "1F_dfNNiH7Ks1I9FrrYzAhWoEOkyABDxr"  // IMPORTANT: Set this to your main CSR folder ID
+    ARCHIVE: "12UF2xw2wjJx9VIKakQreYrAkyDbEKkh-",           // Archive folder
+    ATTACHMENTS: "10pc53H2lzakMn8uxl3vYRw-V-9bQzdue",       // Attachments folder
+    CSR_SUBMISSIONS: "16uGpyM8s9x3kqh3Isw-2LU5KyRWvrV0T",   // CSR Submissions folder
+    GENERATED_PDFS: "1jsXbhb_Br8rtrYDC_E3YdhFdFj17ZeIx",    // Generated PDFs folder
+    IMPACT_STORIES: "1jmZgx_CAK-01dC0laWVy8_OJoxynqYje",    // Impact Stories folder
+    SIGNED_DOCUMENTS: "1UBAx8fi1xEH8A19Uqute1T6Vywsgzlyd", // Signed Documents folder
+    PARENT_FOLDER_ID: "16uGpyM8s9x3kqh3Isw-2LU5KyRWvrV0T"   // Default to CSR_Submissions
   },
   
   SDG_GOALS: {
@@ -1405,11 +1411,11 @@ function approveRequest(requestId, approverEmail, comments, attachments) {
         
         if (nextStage === CONFIG.STATUS.APPROVED) {
           // Final approval
-          submissionsSheet.getRange(i + 1, 17).setValue(CONFIG.STATUS.APPROVED);
-          submissionsSheet.getRange(i + 1, 18).setValue("Completed");
-          submissionsSheet.getRange(i + 1, 19).setValue("");
-          submissionsSheet.getRange(i + 1, 21).setValue(new Date().toISOString());
-          
+          submissionsSheet.getRange(i + 1, 27).setValue(CONFIG.STATUS.APPROVED);      // AA: Status
+          submissionsSheet.getRange(i + 1, 28).setValue("Completed");                  // AB: Workflow Stage
+          submissionsSheet.getRange(i + 1, 29).setValue("");                           // AC: Current Approver (cleared)
+          submissionsSheet.getRange(i + 1, 30).setValue(new Date().toISOString());     // AD: Last Updated
+
           // Log action
           logWorkflowAction({
             requestId: requestId,
@@ -1421,19 +1427,19 @@ function approveRequest(requestId, approverEmail, comments, attachments) {
             comments: comments || "Approved",
             approvalDecision: "Approved"
           });
-          
+
           // Send approval notification
           sendApprovalNotification(requestId, data[i]);
-          
+
         } else {
           // Move to next approval stage
           nextApprover = getNextApprover(nextStage, amount);
-          
-          submissionsSheet.getRange(i + 1, 17).setValue(nextStage);
-          submissionsSheet.getRange(i + 1, 18).setValue(nextStage);
-          submissionsSheet.getRange(i + 1, 19).setValue(nextApprover);
-          submissionsSheet.getRange(i + 1, 21).setValue(new Date().toISOString());
-          
+
+          submissionsSheet.getRange(i + 1, 27).setValue(nextStage);                    // AA: Status
+          submissionsSheet.getRange(i + 1, 28).setValue(nextStage);                    // AB: Workflow Stage
+          submissionsSheet.getRange(i + 1, 29).setValue(nextApprover);                 // AC: Current Approver
+          submissionsSheet.getRange(i + 1, 30).setValue(new Date().toISOString());     // AD: Last Updated
+
           // Log action
           logWorkflowAction({
             requestId: requestId,
@@ -1445,13 +1451,13 @@ function approveRequest(requestId, approverEmail, comments, attachments) {
             comments: comments || "Approved - Moving to next stage",
             approvalDecision: "Approved"
           });
-          
+
           // Send to next approver
           sendApprovalRequestNotification(requestId, data[i], nextApprover);
         }
-        
+
         // Update approval chain
-        var chain = JSON.parse(data[i][26] || "[]");
+        var chain = JSON.parse(data[i][54] || "[]");                                   // BC: Approval Chain (index 54)
         chain.push({
           approver: approverEmail,
           role: getApproverRole(approverEmail),
@@ -1459,7 +1465,7 @@ function approveRequest(requestId, approverEmail, comments, attachments) {
           timestamp: new Date().toISOString(),
           comments: comments || ""
         });
-        submissionsSheet.getRange(i + 1, 27).setValue(JSON.stringify(chain));
+        submissionsSheet.getRange(i + 1, 55).setValue(JSON.stringify(chain));          // BC: Approval Chain (column 55)
         
         // Add attachments if provided
         if (attachments && attachments.length > 0) {
@@ -1501,17 +1507,17 @@ function rejectRequest(requestId, approverEmail, reason, allowResubmission) {
     
     for (var i = 1; i < data.length; i++) {
       if (data[i][0] === requestId) {
-        var currentStatus = data[i][16];
+        var currentStatus = data[i][26];                                       // AA: Status (index 26)
         var newStatus = allowResubmission ? CONFIG.STATUS.RESUBMIT : CONFIG.STATUS.REJECTED;
-        
-        submissionsSheet.getRange(i + 1, 17).setValue(newStatus);
-        submissionsSheet.getRange(i + 1, 18).setValue("Rejected");
-        submissionsSheet.getRange(i + 1, 19).setValue("");
-        submissionsSheet.getRange(i + 1, 21).setValue(new Date().toISOString());
-        submissionsSheet.getRange(i + 1, 29).setValue(reason);
-        
+
+        submissionsSheet.getRange(i + 1, 27).setValue(newStatus);              // AA: Status
+        submissionsSheet.getRange(i + 1, 28).setValue("Rejected");             // AB: Workflow Stage
+        submissionsSheet.getRange(i + 1, 29).setValue("");                     // AC: Current Approver (cleared)
+        submissionsSheet.getRange(i + 1, 30).setValue(new Date().toISOString());// AD: Last Updated
+        submissionsSheet.getRange(i + 1, 56).setValue(reason);                 // BD: Rejection Reason
+
         // Update approval chain
-        var chain = JSON.parse(data[i][26] || "[]");
+        var chain = JSON.parse(data[i][54] || "[]");                           // BC: Approval Chain (index 54)
         chain.push({
           approver: approverEmail,
           role: getApproverRole(approverEmail),
@@ -1519,7 +1525,7 @@ function rejectRequest(requestId, approverEmail, reason, allowResubmission) {
           timestamp: new Date().toISOString(),
           comments: reason
         });
-        submissionsSheet.getRange(i + 1, 27).setValue(JSON.stringify(chain));
+        submissionsSheet.getRange(i + 1, 55).setValue(JSON.stringify(chain));  // BC: Approval Chain (column 55)
         
         // Log action
         logWorkflowAction({
@@ -3114,9 +3120,9 @@ function uploadSignedPDF(requestId, base64Data, fileName) {
       return { success: false, error: "Request not found" };
     }
     
-    // Save signed PDF to Drive
-    var parentFolder = DriveApp.getFolderById(CONFIG.DRIVE_FOLDER.PARENT_FOLDER_ID || DriveApp.getRootFolder().getId());
-    var file = parentFolder.createFile(fileBlob);
+    // Save signed PDF to Signed_Documents folder
+    var signedDocsFolder = DriveApp.getFolderById(CONFIG.DRIVE_FOLDER.SIGNED_DOCUMENTS);
+    var file = signedDocsFolder.createFile(fileBlob);
     file.setName(fileName || ("CSR_Signed_Approval_" + requestId + ".pdf"));
     file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
     
@@ -5091,15 +5097,16 @@ function generateApprovalPDF(requestId, data) {
 
     // Footer with page numbers (Advanced Docs API)
     doc.saveAndClose();
-    insertPageNumbers_(docId, /*header*/false, /*rightAligned*/true);
+    // insertPageNumbers_(docId, /*header*/false, /*rightAligned*/true);  // DISABLED: Docs API not enabled
 
     // Export PDF, save to Drive with proper name
     const tempDoc = DriveApp.getFileById(docId);
     const pdfBlob = tempDoc.getAs('application/pdf');
     pdfBlob.setName("CSR_Approval_" + requestId + ".pdf");
 
-    // Save PDF to Drive (in root or specific folder)
-    const pdfFile = DriveApp.createFile(pdfBlob);
+    // Save PDF to Generated_PDFs folder
+    const generatedPdfsFolder = DriveApp.getFolderById(CONFIG.DRIVE_FOLDER.GENERATED_PDFS);
+    const pdfFile = generatedPdfsFolder.createFile(pdfBlob);
     const pdfUrl = pdfFile.getUrl();
     const pdfId = pdfFile.getId();
 
