@@ -345,6 +345,40 @@ function processEmailAction(action, requestId, comments, token) {
  */
 function triggerNext_(requestId, mapped, headerMap, subSheet, prevToken, rowIndex) {
   try {
+    // Handle CSR Team recommendation -> notify GCC Head for approval
+    if (mapped.role === 'CSR' && mapped.verb === 'recommend') {
+      Logger.log("[Notify] CSR Team recommended - sending to GCC Head for %s", requestId);
+
+      // Get full row data
+      var row = subSheet.getRange(rowIndex, 1, 1, subSheet.getLastColumn()).getValues()[0];
+
+      // Get CSR comments from the row
+      var commentsCol = headerMap['CSR Team Comments'] || headerMap['Reviewer Comments'] || headerMap['Comments'];
+      var csrComments = commentsCol ? String(row[commentsCol - 1] || '') : '';
+
+      // Call sendGCCApprovalEmail to notify Head of GCC
+      try {
+        if (typeof sendGCCApprovalEmail === 'function') {
+          sendGCCApprovalEmail(requestId, row, csrComments);
+          Logger.log("[Notify] GCC approval email sent successfully for %s", requestId);
+
+          // Mark that GCC was notified
+          var gccNotifiedCol = headerMap['GCC Notified'] || headerMap['GCC Email Sent'];
+          if (gccNotifiedCol) {
+            subSheet.getRange(rowIndex, gccNotifiedCol).setValue(new Date());
+          }
+
+          return { info: "GCC Head notified for approval" };
+        } else {
+          Logger.log("[Notify] sendGCCApprovalEmail function not available");
+          return { info: "GCC email function not available" };
+        }
+      } catch (emailError) {
+        Logger.log("[Notify] Error sending GCC email: %s", emailError);
+        return { info: "GCC email error: " + (emailError.message || emailError) };
+      }
+    }
+
     // Handle GCC (Head of GCC) recommendation -> generate PDF and notify CSR Team
     if (mapped.role === 'GCC' && mapped.verb === 'recommend') {
       Logger.log("[Notify] GCC (Head of GCC) recommended - starting PDF generation for %s", requestId);
@@ -626,13 +660,20 @@ function computeUpdatePayload_(row, headerMap, mapped, comments, when) {
   var newHead   = curHead;
 
   // Decide transitions
+  var roleSpecificComments = null;
+  var roleDecision = null;
+
   if (mapped.role === 'CSR') {
     if (mapped.verb === 'recommend') {
       newStatus = 'CSR Recommended';
       newStage  = 'GCC Review';
+      roleSpecificComments = comments;  // Save to CSR Team Comments (AE)
+      roleDecision = 'RECOMMENDED';     // Save to CSR Team Decision (AF)
     } else if (mapped.verb === 'reject') {
       newStatus = 'CSR Rejected';
       newStage  = 'Closed';
+      roleSpecificComments = comments;
+      roleDecision = 'REJECTED';
     }
   } else if (mapped.role === 'GCC') {
     if (mapped.verb === 'recommend') {
@@ -679,7 +720,9 @@ function computeUpdatePayload_(row, headerMap, mapped, comments, when) {
     newHead:   newHead,
     appendComment: toAppend,
     ts: when,
-    sameState: sameState
+    sameState: sameState,
+    roleSpecificComments: roleSpecificComments,
+    roleDecision: roleDecision
   };
 }
 
@@ -701,6 +744,28 @@ function applyRowUpdate_(sheet, rowIndex, headerMap, update) {
   if (update.newHead) setIfPresent('Head Recommendation', update.newHead);
   setIfPresent('Last Updated',   update.ts);
 
+  // Write to specific role columns if available
+  if (update.roleSpecificComments) {
+    // For CSR recommendations, write to CSR Team Comments (AE)
+    var csrCol = headerMap['CSR Team Comments'];
+    if (csrCol) {
+      sheet.getRange(rowIndex, csrCol).setValue(update.roleSpecificComments);
+    }
+
+    // Also set CSR Team Decision (AF)
+    var csrDecisionCol = headerMap['CSR Team Decision'];
+    if (csrDecisionCol && update.roleDecision) {
+      sheet.getRange(rowIndex, csrDecisionCol).setValue(update.roleDecision);
+    }
+
+    // Set CSR Team Date (AG)
+    var csrDateCol = headerMap['CSR Team Date'];
+    if (csrDateCol) {
+      sheet.getRange(rowIndex, csrDateCol).setValue(update.ts);
+    }
+  }
+
+  // Also write to generic Reviewer Comments for backwards compatibility
   if (headerMap['Reviewer Comments']) {
     var cur = sheet.getRange(rowIndex, headerMap['Reviewer Comments']).getValue() || '';
     var next = String(cur).trim();
