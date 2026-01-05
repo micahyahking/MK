@@ -5731,3 +5731,186 @@ function debugSpreadsheetAccess() {
 /*************************************************************
  * END OF ULTIMATE CSR MANAGEMENT SYSTEM v4.0
  *************************************************************/
+/*************************************************************
+ * NEW PDF GENERATION HELPERS - CLEAN PROFESSIONAL FORMAT
+ * Matches the sample format with centered logo
+ *************************************************************/
+
+function addCenteredLogoHeader_(body, requestId) {
+  // Yellow and red accent bars at top
+  const topBar = body.appendTable();
+  topBar.setBorderWidth(0);
+  const barRow = topBar.appendTableRow();
+  barRow.setMinimumHeight(8);
+  
+  const yellowCell = barRow.appendTableCell("");
+  yellowCell.setBackgroundColor("#FFC107");
+  yellowCell.setWidth(400);
+  
+  const redCell = barRow.appendTableCell("");
+  redCell.setBackgroundColor("#DC3545");
+  redCell.setWidth(100);
+  
+  body.appendParagraph("").setSpacingAfter(4);
+  
+  // Centered logo
+  const logoPara = body.appendParagraph("");
+  logoPara.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+  
+  try {
+    const logoBlob = DriveApp.getFileById(LOGO_FILE_ID).getBlob();
+    const logoImg = logoPara.appendInlineImage(logoBlob);
+    logoImg.setWidth(200);
+    logoImg.setHeight(60);
+  } catch (e) {
+    logoPara.appendText("CAHYA MATA SARAWAK GROUP");
+    logoPara.editAsText().setBold(true).setFontSize(18);
+  }
+  
+  body.appendParagraph("").setSpacingAfter(4);
+  
+  // Bottom accent bars
+  const bottomBar = body.appendTable();
+  bottomBar.setBorderWidth(0);
+  const bRow = bottomBar.appendTableRow();
+  bRow.setMinimumHeight(8);
+  
+  const yellowCell2 = bRow.appendTableCell("");
+  yellowCell2.setBackgroundColor("#FFC107");
+  yellowCell2.setWidth(400);
+  
+  const redCell2 = bRow.appendTableCell("");
+  redCell2.setBackgroundColor("#DC3545");
+  redCell2.setWidth(100);
+  
+  body.appendParagraph("").setSpacingAfter(8);
+  
+  // Request number at top right
+  const reqNum = body.appendParagraph("Donation & Sponsorship Request No. : " + requestId);
+  reqNum.setAlignment(DocumentApp.HorizontalAlignment.RIGHT);
+  reqNum.editAsText().setFontSize(9).setBold(true);
+  
+  body.appendParagraph("").setSpacingAfter(8);
+}
+
+function addDetailRow_(body, label, value) {
+  if (!value) return;
+  
+  const table = body.appendTable();
+  table.setBorderWidth(1);
+  table.setBorderColor("#DEE2E6");
+  
+  const row = table.appendTableRow();
+  
+  const labelCell = row.appendTableCell(label);
+  labelCell.setBackgroundColor("#F8F9FA");
+  labelCell.setPaddingTop(6);
+  labelCell.setPaddingBottom(6);
+  labelCell.setPaddingLeft(10);
+  labelCell.setWidth(200);
+  labelCell.editAsText().setBold(true).setFontSize(10);
+  
+  const valueCell = row.appendTableCell(value.toString());
+  valueCell.setPaddingTop(6);
+  valueCell.setPaddingBottom(6);
+  valueCell.setPaddingLeft(10);
+  valueCell.editAsText().setFontSize(10);
+  
+  body.appendParagraph("").setSpacingAfter(2);
+}
+
+function addFullWidthDetail_(body, label, value) {
+  if (!value) return;
+  
+  const table = body.appendTable();
+  table.setBorderWidth(1);
+  table.setBorderColor("#DEE2E6");
+  
+  const row = table.appendTableRow();
+  const cell = row.appendTableCell(label + ":\n\n" + value);
+  cell.setPaddingTop(8);
+  cell.setPaddingBottom(8);
+  cell.setPaddingLeft(10);
+  cell.setPaddingRight(10);
+  
+  const text = cell.editAsText();
+  text.setBold(0, label.length, true);
+  text.setFontSize(10);
+  
+  body.appendParagraph("").setSpacingAfter(4);
+}
+
+function addSignatureSection_(body, requestId, amount, data) {
+  const table = body.appendTable();
+  table.setBorderWidth(1);
+  table.setBorderColor("#DEE2E6");
+  
+  // GCC Team Remark row
+  let row = table.appendTableRow();
+  row.setMinimumHeight(30);
+  let cell = row.appendTableCell("Rondie Wilfred Galang");
+  cell.setBackgroundColor("#F8F9FA");
+  cell.setPaddingLeft(10);
+  cell.setPaddingTop(6);
+  cell.setPaddingBottom(6);
+  cell.editAsText().setBold(true).setFontSize(10);
+  
+  // GCC Team Verification Checklist Link row
+  row = table.appendTableRow();
+  row.setMinimumHeight(30);
+  cell = row.appendTableCell("GCC Team Verification Checklist Link : The request has been verified as per the verification checklist.");
+  cell.setPaddingLeft(10);
+  cell.setPaddingTop(6);
+  cell.setPaddingBottom(6);
+  cell.editAsText().setFontSize(10);
+  
+  // Head of GCC's Comment row
+  row = table.appendTableRow();
+  row.setMinimumHeight(50);
+  cell = row.appendTableCell("Head of GCC's Comment :\n\nRecommend this one-off support in terms of modal for the premises, education, therapy, private tuition, and basic utilities requirements of the children.\n\n..........................................");
+  cell.setPaddingLeft(10);
+  cell.setPaddingTop(10);
+  cell.setPaddingBottom(10);
+  cell.editAsText().setFontSize(10);
+  
+  // Recommended by row
+  row = table.appendTableRow();
+  row.setMinimumHeight(60);
+  cell = row.appendTableCell("Recommended by :\n\n\nIzzam Ibrahim\nGroup Chief Corporate Services Officer\n\n..........................................");
+  cell.setPaddingLeft(10);
+  cell.setPaddingTop(10);
+  cell.setPaddingBottom(10);
+  cell.editAsText().setFontSize(10);
+  
+  // Verified by row
+  row = table.appendTableRow();
+  row.setMinimumHeight(60);
+  cell = row.appendTableCell("Verified by :\n\n\nShirley Noiwoot David\nGroup Head, Group Compliance\n\n..........................................");
+  cell.setPaddingLeft(10);
+  cell.setPaddingTop(10);
+  cell.setPaddingBottom(10);
+  cell.editAsText().setFontSize(10);
+  
+  // Add GCFO if amount is high
+  if (amount > CONFIG.MONETARY_THRESHOLDS.LOW) {
+    row = table.appendTableRow();
+    row.setMinimumHeight(60);
+    cell = row.appendTableCell("GCFO :\n\n\n\n\n..........................................");
+    cell.setPaddingLeft(10);
+    cell.setPaddingTop(10);
+    cell.setPaddingBottom(10);
+    cell.editAsText().setFontSize(10);
+  }
+  
+  // Add Azhar bin Othman for very high amounts
+  if (amount > CONFIG.MONETARY_THRESHOLDS.HIGH) {
+    row = table.appendTableRow();
+    row.setMinimumHeight(60);
+    cell = row.appendTableCell("Azhar Bin Othman\n\n\n\n\n..........................................");
+    cell.setPaddingLeft(10);
+    cell.setPaddingTop(10);
+    cell.setPaddingBottom(10);
+    cell.editAsText().setFontSize(10);
+  }
+}
+
