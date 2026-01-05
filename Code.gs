@@ -2599,7 +2599,7 @@ function sendAcknowledgementEmail(requestId, requestData) {
     var subject = "✅ CSR Request Received - " + requestId;
     var requesterEmail = requestData.requesterEmail || requestData.email;
     var csrRepEmail = requestData.csrRepEmail || requestData.email;
-    
+
     var htmlBody = getEmailHTML('acknowledgement', {
       REQUEST_ID: requestId,
       REQUESTER_NAME: requestData.requesterName || requestData.submitterName,
@@ -2607,7 +2607,13 @@ function sendAcknowledgementEmail(requestId, requestData) {
       AMOUNT: formatCurrency(requestData.amountRequested),
       PURPOSE: requestData.purpose || "",
       REQUEST_TYPE: requestData.requestType || "",
-      SUBMISSION_DATE: new Date().toLocaleDateString()
+      SUBMISSION_DATE: new Date().toLocaleDateString(),
+      EVENT_NAME: requestData.eventName || "N/A",
+      EVENT_DATE: requestData.eventDate || "TBD",
+      EVENT_LOCATION: requestData.eventLocation || "N/A",
+      REQUESTER_CONTACT: requestData.requesterContact || "N/A",
+      ORGANIZATION_NRIC: requestData.organizationNRIC || "N/A",
+      DURATION: requestData.duration || "N/A"
     });
     
     // Send to requester, CC to CSR rep if different
@@ -2638,21 +2644,27 @@ function sendAcknowledgementEmail(requestId, requestData) {
 function sendCSRVerificationEmail(requestId, requestData) {
   try {
     var subject = "🔍 Action Required: Verify CSR Request " + requestId;
-    
+
     // Generate action tokens
     var recommendToken = generateActionToken(requestId, 'csr_recommend');
     var rejectToken = generateActionToken(requestId, 'csr_reject');
-    
+
     // Get script URL
     var scriptUrl = ScriptApp.getService().getUrl();
-    
-    var recommendUrl = scriptUrl + "?action=csr_recommend&token=" + 
-                       encodeURIComponent(recommendToken) + "&requestId=" + 
+
+    var recommendUrl = scriptUrl + "?action=csr_recommend&token=" +
+                       encodeURIComponent(recommendToken) + "&requestId=" +
                        encodeURIComponent(requestId);
-    var rejectUrl = scriptUrl + "?action=csr_reject&token=" + 
-                    encodeURIComponent(rejectToken) + "&requestId=" + 
+    var rejectUrl = scriptUrl + "?action=csr_reject&token=" +
+                    encodeURIComponent(rejectToken) + "&requestId=" +
                     encodeURIComponent(requestId);
-    
+
+    // Format SDG goals if they exist
+    var sdgGoals = "None specified";
+    if (requestData.sdgGoals && Array.isArray(requestData.sdgGoals) && requestData.sdgGoals.length > 0) {
+      sdgGoals = requestData.sdgGoals.join(", ");
+    }
+
     var htmlBody = getEmailHTML('csr_verification', {
       REQUEST_ID: requestId,
       REQUESTER_NAME: requestData.requesterName || requestData.submitterName,
@@ -2660,6 +2672,22 @@ function sendCSRVerificationEmail(requestId, requestData) {
       AMOUNT: formatCurrency(requestData.amountRequested),
       PURPOSE: requestData.purpose || "",
       REQUEST_TYPE: requestData.requestType || "",
+      EVENT_NAME: requestData.eventName || "N/A",
+      EVENT_DATE: requestData.eventDate || "TBD",
+      EVENT_LOCATION: requestData.eventLocation || "N/A",
+      EVENT_DESCRIPTION: requestData.eventDescription || "N/A",
+      EVENT_OBJECTIVES: requestData.eventObjectives || "N/A",
+      EVENT_FOCUS_AREA: requestData.eventFocusArea || "N/A",
+      REQUESTER_EMAIL: requestData.requesterEmail || "N/A",
+      REQUESTER_CONTACT: requestData.requesterContact || "N/A",
+      ORGANIZATION_NRIC: requestData.organizationNRIC || "N/A",
+      PAYEE_NAME: requestData.payeeName || "N/A",
+      PAYEE_BANK: requestData.payeeBank || "N/A",
+      PAYEE_ACCOUNT: requestData.payeeAccount || "N/A",
+      BENEFICIARY_COUNT: requestData.beneficiaryCount || "N/A",
+      GEOGRAPHIC_AREA: requestData.geographicArea || "N/A",
+      DURATION: requestData.duration || "N/A",
+      SDG_GOALS: sdgGoals,
       RECOMMEND_URL: recommendUrl,
       REJECT_URL: rejectUrl
     });
@@ -2750,27 +2778,52 @@ function processCSRRecommendation(requestId, rowIndex, isRecommended, comments) 
 function sendGCCApprovalEmail(requestId, data, csrComments) {
   try {
     var subject = "📋 Approval Required: CSR Request " + requestId;
-    
+
     // Generate action tokens
     var recommendToken = generateActionToken(requestId, 'gcc_recommend');
     var rejectToken = generateActionToken(requestId, 'gcc_reject');
-    
+
     var scriptUrl = ScriptApp.getService().getUrl();
-    
-    var recommendUrl = scriptUrl + "?action=gcc_recommend&token=" + 
-                       encodeURIComponent(recommendToken) + "&requestId=" + 
+
+    var recommendUrl = scriptUrl + "?action=gcc_recommend&token=" +
+                       encodeURIComponent(recommendToken) + "&requestId=" +
                        encodeURIComponent(requestId);
-    var rejectUrl = scriptUrl + "?action=gcc_reject&token=" + 
-                    encodeURIComponent(rejectToken) + "&requestId=" + 
+    var rejectUrl = scriptUrl + "?action=gcc_reject&token=" +
+                    encodeURIComponent(rejectToken) + "&requestId=" +
                     encodeURIComponent(requestId);
-    
+
+    // Format SDG goals if they exist
+    var sdgGoalsRaw = data[46] || "[]";  // AW: SDG Goals (column 47, index 46)
+    var sdgGoals = "None specified";
+    try {
+      var sdgArray = JSON.parse(sdgGoalsRaw);
+      if (Array.isArray(sdgArray) && sdgArray.length > 0) {
+        sdgGoals = sdgArray.join(", ");
+      }
+    } catch (e) {
+      sdgGoals = "None specified";
+    }
+
     var htmlBody = getEmailHTML('gcc_approval', {
       REQUEST_ID: requestId,
-      REQUESTER_NAME: data[6] || data[3],  // Requester Name or CSR Rep Name
-      ORGANIZATION: data[9] || "",
-      AMOUNT: formatCurrency(data[18]),
-      PURPOSE: data[19] || "",
-      REQUEST_TYPE: data[11] || "",
+      REQUESTER_NAME: data[6] || data[3],  // G: Requester Name or D: CSR Rep Name
+      ORGANIZATION: data[9] || "",         // J: Organization Name
+      AMOUNT: formatCurrency(data[18]),    // S: Amount Requested
+      PURPOSE: data[19] || "",             // T: Purpose
+      REQUEST_TYPE: data[11] || "",        // L: Request Type
+      EVENT_NAME: data[12] || "N/A",       // M: Event Name
+      EVENT_DATE: data[13] || "TBD",       // N: Event Date
+      EVENT_LOCATION: data[14] || "N/A",   // O: Event Location
+      EVENT_FOCUS_AREA: data[15] || "N/A", // P: Event Focus Area
+      EVENT_DESCRIPTION: data[16] || "N/A", // Q: Event Description
+      EVENT_OBJECTIVES: data[17] || "N/A",  // R: Event Objectives
+      PAYEE_NAME: data[20] || "N/A",       // U: Payee Name
+      PAYEE_BANK: data[21] || "N/A",       // V: Payee Bank
+      PAYEE_ACCOUNT: data[22] || "N/A",    // W: Payee Account
+      BENEFICIARY_COUNT: data[48] || "N/A", // AY: Beneficiary Count (column 49, index 48)
+      GEOGRAPHIC_AREA: data[49] || "N/A",   // AZ: Geographic Area (column 50, index 49)
+      DURATION: data[50] || "N/A",         // BA: Duration (column 51, index 50)
+      SDG_GOALS: sdgGoals,
       CSR_COMMENTS: csrComments || "No comments provided",
       RECOMMEND_URL: recommendUrl,
       REJECT_URL: rejectUrl
@@ -2944,12 +2997,14 @@ function processGCCRecommendation(requestId, rowIndex, isRecommended, comments) 
 function sendPDFGeneratedEmail(requestId, data, pdfUrl, gccComments) {
   try {
     var subject = "📄 Approval PDF Generated - " + requestId;
-    
+
     var htmlBody = getEmailHTML('pdf_generated', {
       REQUEST_ID: requestId,
       REQUESTER_NAME: data[6] || data[3],
       ORGANIZATION: data[9] || "",
       AMOUNT: formatCurrency(data[18]),
+      EVENT_NAME: data[12] || "N/A",
+      EVENT_DATE: data[13] || "TBD",
       PDF_URL: pdfUrl,
       GCC_COMMENTS: gccComments || "No comments provided",
       ADMIN_URL: ScriptApp.getService().getUrl() + "?page=admin"
@@ -3129,15 +3184,21 @@ function createCSRFolder(requestId, data) {
 function sendApprovalSuccessEmail(requestId, data, signedPdfUrl, folderUrl) {
   try {
     var subject = "🎉 Congratulations! Your CSR Request is Approved - " + requestId;
-    
+
     var requesterEmail = data[7] || data[4];  // Requester Email or CSR Rep Email
     var csrRepEmail = data[4];                // CSR Rep Email
-    
+
     var htmlBody = getEmailHTML('approval_success', {
       REQUEST_ID: requestId,
       REQUESTER_NAME: data[6] || data[3],
       ORGANIZATION: data[9] || "",
       AMOUNT: formatCurrency(data[18]),
+      EVENT_NAME: data[12] || "N/A",
+      EVENT_DATE: data[13] || "TBD",
+      PURPOSE: data[19] || "",
+      PAYEE_NAME: data[20] || "N/A",
+      CSR_REP_NAME: data[3],
+      CSR_REP_EMAIL: data[4],
       APPROVAL_DATE: new Date().toLocaleDateString(),
       SIGNED_PDF_URL: signedPdfUrl,
       FOLDER_URL: folderUrl
@@ -3171,13 +3232,17 @@ function sendApprovalSuccessEmail(requestId, data, signedPdfUrl, folderUrl) {
 function sendGMDNotificationEmail(requestId, data, signedPdfUrl) {
   try {
     var subject = "ℹ️ CSR Approval Notification - " + requestId;
-    
+
     var htmlBody = getEmailHTML('gmd_notification', {
       REQUEST_ID: requestId,
       REQUESTER_NAME: data[6] || data[3],
       ORGANIZATION: data[9] || "",
       AMOUNT: formatCurrency(data[18]),
       PURPOSE: data[19] || "",
+      EVENT_NAME: data[12] || "N/A",
+      EVENT_DATE: data[13] || "TBD",
+      EVENT_LOCATION: data[14] || "N/A",
+      BENEFICIARY_COUNT: data[48] || "N/A",
       APPROVAL_DATE: new Date().toLocaleDateString(),
       SIGNED_PDF_URL: signedPdfUrl
     });
@@ -3228,12 +3293,16 @@ function sendFolderCreatedEmail(requestId, data, folderUrl) {
   try {
     var subject = "📁 Drive Folder Created - " + requestId;
     var csrRepEmail = data[4];  // CSR Rep Email
-    
+
     var htmlBody = getEmailHTML('folder_created', {
       REQUEST_ID: requestId,
       CSR_REP_NAME: data[3],
       REQUESTER_NAME: data[6] || data[3],
+      REQUESTER_EMAIL: data[7] || "N/A",
+      REQUESTER_CONTACT: data[8] || "N/A",
       ORGANIZATION: data[9] || "",
+      EVENT_NAME: data[12] || "N/A",
+      EVENT_DATE: data[13] || "TBD",
       FOLDER_URL: folderUrl
     });
     
@@ -3377,21 +3446,53 @@ function checkFoldersAndSendReminders() {
 function sendStoryReminderEmail(requestId, csrRepEmail, requesterEmail, folderUrl, reminderCount) {
   try {
     var subject = "📸 Reminder: Please Upload Your CSR Story - " + requestId;
-    
+
+    // Fetch full request data from spreadsheet to get all details
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var submissionsSheet = ss.getSheetByName(CONFIG.SHEET_NAMES.SUBMISSIONS);
+    var data = submissionsSheet.getDataRange().getValues();
+
+    var requestData = null;
+    for (var i = 1; i < data.length; i++) {
+      if (data[i][0] === requestId) {
+        requestData = data[i];
+        break;
+      }
+    }
+
+    // Calculate days since approval
+    var daysSinceApproval = "N/A";
+    if (requestData && requestData[41]) {  // AP: Signed PDF Upload Date
+      try {
+        var approvalDate = new Date(requestData[41]);
+        var today = new Date();
+        var diffTime = Math.abs(today - approvalDate);
+        var diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        daysSinceApproval = diffDays + " days";
+      } catch (e) {
+        daysSinceApproval = "N/A";
+      }
+    }
+
     var htmlBody = getEmailHTML('story_reminder', {
       REQUEST_ID: requestId,
-      CSR_REP_NAME: "",  // We don't have name easily accessible here
+      CSR_REP_NAME: requestData ? (requestData[3] || "CSR Team") : "CSR Team",
+      EVENT_NAME: requestData ? (requestData[12] || "N/A") : "N/A",
+      EVENT_DATE: requestData ? (requestData[13] || "TBD") : "TBD",
+      ORGANIZATION: requestData ? (requestData[9] || "N/A") : "N/A",
+      REQUESTER_NAME: requestData ? (requestData[6] || requestData[3]) : "N/A",
+      DAYS_SINCE_APPROVAL: daysSinceApproval,
       FOLDER_URL: folderUrl,
       REMINDER_COUNT: reminderCount + 1
     });
-    
+
     GmailApp.sendEmail(csrRepEmail, subject, "", {
       htmlBody: htmlBody,
       name: "CSR Management System"
     });
-    
+
     Logger.log("Story reminder email sent to: " + csrRepEmail);
-    
+
   } catch (error) {
     Logger.log("Error sending story reminder: " + error);
   }
@@ -3414,7 +3515,10 @@ function sendRejectionEmail(requestId, data, rejectedBy, reason) {
       ORGANIZATION: data[9] || "",
       REJECTED_BY: rejectedBy,
       REASON: reason || "No reason provided",
-      AMOUNT: formatCurrency(data[18])
+      AMOUNT: formatCurrency(data[18]),
+      EVENT_NAME: data[12] || "N/A",
+      REQUEST_TYPE: data[11] || "",
+      PURPOSE: data[19] || ""
     });
     
     var mailOptions = {
@@ -3683,12 +3787,30 @@ function getEmailHTML(type, variables) {
                 <p style="margin: 5px 0;">
                   <strong>Request ID:</strong> ${variables.REQUEST_ID}<br/>
                   <strong>Organization:</strong> ${variables.ORGANIZATION}<br/>
+                  <strong>Organization NRIC/RN:</strong> ${variables.ORGANIZATION_NRIC}<br/>
                   <strong>Request Type:</strong> ${variables.REQUEST_TYPE}<br/>
                   <strong>Amount:</strong> ${variables.AMOUNT}<br/>
                   <strong>Submission Date:</strong> ${variables.SUBMISSION_DATE}
                 </p>
               </div>
-              
+
+              <div class="info-box">
+                <strong>🎯 EVENT DETAILS</strong>
+                <p style="margin: 5px 0;">
+                  <strong>Event Name:</strong> ${variables.EVENT_NAME}<br/>
+                  <strong>Event Date:</strong> ${variables.EVENT_DATE}<br/>
+                  <strong>Event Location:</strong> ${variables.EVENT_LOCATION}<br/>
+                  <strong>Duration:</strong> ${variables.DURATION}
+                </p>
+              </div>
+
+              <div class="info-box">
+                <strong>📞 CONTACT INFORMATION</strong>
+                <p style="margin: 5px 0;">
+                  <strong>Phone/Contact:</strong> ${variables.REQUESTER_CONTACT}
+                </p>
+              </div>
+
               <h2>What Happens Next?</h2>
               <p>Your request will go through our verification and approval process:</p>
               <ol style="line-height: 1.8;">
@@ -3744,16 +3866,62 @@ function getEmailHTML(type, variables) {
                   <strong>Request ID:</strong> ${variables.REQUEST_ID}<br/>
                   <strong>Requester:</strong> ${variables.REQUESTER_NAME}<br/>
                   <strong>Organization:</strong> ${variables.ORGANIZATION}<br/>
+                  <strong>Organization NRIC/RN:</strong> ${variables.ORGANIZATION_NRIC}<br/>
                   <strong>Request Type:</strong> ${variables.REQUEST_TYPE}<br/>
                   <strong>Amount:</strong> ${variables.AMOUNT}
                 </p>
               </div>
-              
+
+              <div class="info-box">
+                <strong>🎯 EVENT DETAILS</strong>
+                <p style="margin: 5px 0;">
+                  <strong>Event Name:</strong> ${variables.EVENT_NAME}<br/>
+                  <strong>Event Date:</strong> ${variables.EVENT_DATE}<br/>
+                  <strong>Event Location:</strong> ${variables.EVENT_LOCATION}<br/>
+                  <strong>Focus Area:</strong> ${variables.EVENT_FOCUS_AREA}<br/>
+                  <strong>Duration:</strong> ${variables.DURATION}<br/>
+                  <strong>Expected Beneficiaries:</strong> ${variables.BENEFICIARY_COUNT}<br/>
+                  <strong>Geographic Area:</strong> ${variables.GEOGRAPHIC_AREA}
+                </p>
+              </div>
+
+              <div class="info-box">
+                <strong>📋 EVENT DESCRIPTION</strong>
+                <p>${variables.EVENT_DESCRIPTION}</p>
+              </div>
+
+              <div class="info-box">
+                <strong>🎯 EVENT OBJECTIVES</strong>
+                <p>${variables.EVENT_OBJECTIVES}</p>
+              </div>
+
               <div class="info-box">
                 <strong>📝 PURPOSE</strong>
                 <p>${variables.PURPOSE}</p>
               </div>
-              
+
+              <div class="info-box">
+                <strong>💰 PAYMENT DETAILS</strong>
+                <p style="margin: 5px 0;">
+                  <strong>Payee Name:</strong> ${variables.PAYEE_NAME}<br/>
+                  <strong>Bank:</strong> ${variables.PAYEE_BANK}<br/>
+                  <strong>Account Number:</strong> ${variables.PAYEE_ACCOUNT}
+                </p>
+              </div>
+
+              <div class="info-box">
+                <strong>📞 CONTACT INFORMATION</strong>
+                <p style="margin: 5px 0;">
+                  <strong>Requester Email:</strong> ${variables.REQUESTER_EMAIL}<br/>
+                  <strong>Requester Phone:</strong> ${variables.REQUESTER_CONTACT}
+                </p>
+              </div>
+
+              <div class="info-box" style="border-left-color: #27ae60;">
+                <strong>🌍 SDG ALIGNMENT</strong>
+                <p>${variables.SDG_GOALS}</p>
+              </div>
+
               <h2>Take Action</h2>
               <p>Please review the request details and take one of the following actions:</p>
               
@@ -3809,17 +3977,54 @@ function getEmailHTML(type, variables) {
                   <strong>Amount:</strong> ${variables.AMOUNT}
                 </p>
               </div>
-              
+
+              <div class="info-box">
+                <strong>🎯 EVENT DETAILS</strong>
+                <p style="margin: 5px 0;">
+                  <strong>Event Name:</strong> ${variables.EVENT_NAME}<br/>
+                  <strong>Event Date:</strong> ${variables.EVENT_DATE}<br/>
+                  <strong>Event Location:</strong> ${variables.EVENT_LOCATION}<br/>
+                  <strong>Focus Area:</strong> ${variables.EVENT_FOCUS_AREA}<br/>
+                  <strong>Duration:</strong> ${variables.DURATION}<br/>
+                  <strong>Expected Beneficiaries:</strong> ${variables.BENEFICIARY_COUNT}<br/>
+                  <strong>Geographic Area:</strong> ${variables.GEOGRAPHIC_AREA}
+                </p>
+              </div>
+
+              <div class="info-box">
+                <strong>📋 EVENT DESCRIPTION</strong>
+                <p>${variables.EVENT_DESCRIPTION}</p>
+              </div>
+
+              <div class="info-box">
+                <strong>🎯 EVENT OBJECTIVES</strong>
+                <p>${variables.EVENT_OBJECTIVES}</p>
+              </div>
+
               <div class="info-box">
                 <strong>📝 PURPOSE</strong>
                 <p>${variables.PURPOSE}</p>
               </div>
-              
+
+              <div class="info-box">
+                <strong>💰 PAYMENT DETAILS</strong>
+                <p style="margin: 5px 0;">
+                  <strong>Payee Name:</strong> ${variables.PAYEE_NAME}<br/>
+                  <strong>Bank:</strong> ${variables.PAYEE_BANK}<br/>
+                  <strong>Account Number:</strong> ${variables.PAYEE_ACCOUNT}
+                </p>
+              </div>
+
+              <div class="info-box" style="border-left-color: #27ae60;">
+                <strong>🌍 SDG ALIGNMENT</strong>
+                <p>${variables.SDG_GOALS}</p>
+              </div>
+
               <div class="info-box" style="border-left-color: #0984e3;">
                 <strong>💬 CSR TEAM COMMENTS</strong>
                 <p>${variables.CSR_COMMENTS}</p>
               </div>
-              
+
               <h2>Your Decision</h2>
               <p>If you recommend this request, an approval PDF will be automatically generated with blank signature lines for physical signing.</p>
               
@@ -3871,15 +4076,17 @@ function getEmailHTML(type, variables) {
                   <strong>Request ID:</strong> ${variables.REQUEST_ID}<br/>
                   <strong>Requester:</strong> ${variables.REQUESTER_NAME}<br/>
                   <strong>Organization:</strong> ${variables.ORGANIZATION}<br/>
+                  <strong>Event Name:</strong> ${variables.EVENT_NAME}<br/>
+                  <strong>Event Date:</strong> ${variables.EVENT_DATE}<br/>
                   <strong>Amount:</strong> ${variables.AMOUNT}
                 </p>
               </div>
-              
+
               <div class="info-box" style="border-left-color: #0984e3;">
                 <strong>💬 HEAD OF GCC COMMENTS</strong>
                 <p>${variables.GCC_COMMENTS}</p>
               </div>
-              
+
               <h2>Next Steps</h2>
               <ol style="line-height: 1.8;">
                 <li><strong>Download the PDF</strong> using the link below</li>
@@ -3935,11 +4142,27 @@ function getEmailHTML(type, variables) {
                 <p style="margin: 5px 0;">
                   <strong>Request ID:</strong> ${variables.REQUEST_ID}<br/>
                   <strong>Organization:</strong> ${variables.ORGANIZATION}<br/>
+                  <strong>Event Name:</strong> ${variables.EVENT_NAME}<br/>
+                  <strong>Event Date:</strong> ${variables.EVENT_DATE}<br/>
                   <strong>Approved Amount:</strong> <span style="color: #27ae60; font-size: 18px; font-weight: 600;">${variables.AMOUNT}</span><br/>
+                  <strong>Payment To:</strong> ${variables.PAYEE_NAME}<br/>
                   <strong>Approval Date:</strong> ${variables.APPROVAL_DATE}
                 </p>
               </div>
-              
+
+              <div class="info-box">
+                <strong>📝 PURPOSE</strong>
+                <p>${variables.PURPOSE}</p>
+              </div>
+
+              <div class="info-box">
+                <strong>📞 YOUR CSR REPRESENTATIVE</strong>
+                <p style="margin: 5px 0;">
+                  <strong>Name:</strong> ${variables.CSR_REP_NAME}<br/>
+                  <strong>Email:</strong> ${variables.CSR_REP_EMAIL}
+                </p>
+              </div>
+
               <h2>📁 Your Project Folder</h2>
               <p>A Google Drive folder has been created specifically for your project. Please use this folder to upload:</p>
               
@@ -4008,16 +4231,26 @@ function getEmailHTML(type, variables) {
                   <strong>Request ID:</strong> ${variables.REQUEST_ID}<br/>
                   <strong>Requester:</strong> ${variables.REQUESTER_NAME}<br/>
                   <strong>Organization:</strong> ${variables.ORGANIZATION}<br/>
+                  <strong>Event Name:</strong> ${variables.EVENT_NAME}<br/>
+                  <strong>Event Date:</strong> ${variables.EVENT_DATE}<br/>
+                  <strong>Event Location:</strong> ${variables.EVENT_LOCATION}<br/>
                   <strong>Approved Amount:</strong> ${variables.AMOUNT}<br/>
                   <strong>Approval Date:</strong> ${variables.APPROVAL_DATE}
                 </p>
               </div>
-              
+
               <div class="info-box">
                 <strong>📝 PURPOSE</strong>
                 <p>${variables.PURPOSE}</p>
               </div>
-              
+
+              <div class="info-box" style="border-left-color: #27ae60;">
+                <strong>📊 IMPACT METRICS</strong>
+                <p style="margin: 5px 0;">
+                  <strong>Expected Beneficiaries:</strong> ${variables.BENEFICIARY_COUNT}
+                </p>
+              </div>
+
               <p>The signed approval document is attached to this email for your records.</p>
               
               <div style="text-align: center; margin: 30px 0;">
@@ -4064,10 +4297,20 @@ function getEmailHTML(type, variables) {
                 <p style="margin: 5px 0;">
                   <strong>Request ID:</strong> ${variables.REQUEST_ID}<br/>
                   <strong>Requester:</strong> ${variables.REQUESTER_NAME}<br/>
-                  <strong>Organization:</strong> ${variables.ORGANIZATION}
+                  <strong>Organization:</strong> ${variables.ORGANIZATION}<br/>
+                  <strong>Event Name:</strong> ${variables.EVENT_NAME}<br/>
+                  <strong>Event Date:</strong> ${variables.EVENT_DATE}
                 </p>
               </div>
-              
+
+              <div class="info-box">
+                <strong>📞 REQUESTER CONTACT</strong>
+                <p style="margin: 5px 0;">
+                  <strong>Email:</strong> ${variables.REQUESTER_EMAIL}<br/>
+                  <strong>Phone:</strong> ${variables.REQUESTER_CONTACT}
+                </p>
+              </div>
+
               <h2>What to Upload</h2>
               <p>Please remind the requester to upload the following documentation to track CSR impact:</p>
               
@@ -4114,17 +4357,29 @@ function getEmailHTML(type, variables) {
               <p>Please Upload Your CSR Story</p>
             </div>
             <div class="content">
-              <p>Dear <strong>CSR Representative</strong>,</p>
-              
+              <p>Dear <strong>${variables.CSR_REP_NAME}</strong>,</p>
+
               <p>This is a friendly reminder to upload documentation for approved CSR Request <strong>${variables.REQUEST_ID}</strong>.</p>
-              
+
+              <div class="info-box">
+                <strong>📋 REQUEST DETAILS</strong>
+                <p style="margin: 5px 0;">
+                  <strong>Request ID:</strong> ${variables.REQUEST_ID}<br/>
+                  <strong>Event Name:</strong> ${variables.EVENT_NAME}<br/>
+                  <strong>Event Date:</strong> ${variables.EVENT_DATE}<br/>
+                  <strong>Organization:</strong> ${variables.ORGANIZATION}<br/>
+                  <strong>Requester:</strong> ${variables.REQUESTER_NAME}
+                </p>
+              </div>
+
               <div style="background: #fff3cd; padding: 15px; border-radius: 6px; border-left: 4px solid #f39c12; margin: 20px 0;">
                 <p style="margin: 0; font-size: 14px;">
                   <strong>⏰ Reminder #${variables.REMINDER_COUNT}</strong><br/>
+                  <strong>Days since approval:</strong> ${variables.DAYS_SINCE_APPROVAL}<br/><br/>
                   We haven't received your project documentation yet. Your story helps us measure and showcase the positive impact of our CSR initiatives!
                 </p>
               </div>
-              
+
               <h2>What We Need</h2>
               <p>Please upload the following to your project folder:</p>
               
@@ -4181,16 +4436,23 @@ function getEmailHTML(type, variables) {
                 <p style="margin: 5px 0;">
                   <strong>Request ID:</strong> ${variables.REQUEST_ID}<br/>
                   <strong>Organization:</strong> ${variables.ORGANIZATION}<br/>
+                  <strong>Event Name:</strong> ${variables.EVENT_NAME}<br/>
+                  <strong>Request Type:</strong> ${variables.REQUEST_TYPE}<br/>
                   <strong>Amount:</strong> ${variables.AMOUNT}<br/>
                   <strong>Decision By:</strong> ${variables.REJECTED_BY}
                 </p>
               </div>
-              
+
+              <div class="info-box">
+                <strong>📝 PURPOSE</strong>
+                <p>${variables.PURPOSE}</p>
+              </div>
+
               <div class="info-box" style="border-left-color: #e74c3c;">
                 <strong>💬 REASON</strong>
                 <p>${variables.REASON}</p>
               </div>
-              
+
               <p>While we are unable to support this particular request, we encourage you to:</p>
               
               <ul style="line-height: 1.8;">
