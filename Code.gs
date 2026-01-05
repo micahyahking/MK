@@ -153,29 +153,32 @@ function getSpreadsheet_() {
 function doGet(e) {
   try {
     initializeDatabase();
-    
+
     var page = e.parameter.page || 'index';
     var action = e.parameter.action;
-    
+    var faviconUrl = "https://www.cahyamata.com/wp-content/uploads/2015/02/Cahya-Mata-logo_CMYK.jpg";
+
     // Handle email action links (recommend/reject)
     if (action && action.indexOf('_recommend') > -1 || action && action.indexOf('_reject') > -1) {
       return handleEmailAction(e);
     }
-    
+
     // Route to different pages
     switch(page) {
       case 'status':
         return HtmlService.createTemplateFromFile('status')
           .evaluate()
           .setTitle('Request Status - CSR System')
+          .setFaviconUrl(faviconUrl)
           .addMetaTag('viewport', 'width=device-width, initial-scale=1');
-          
+
       case 'admin':
         return HtmlService.createTemplateFromFile('admin')
           .evaluate()
           .setTitle('Admin Dashboard - CSR System')
+          .setFaviconUrl(faviconUrl)
           .addMetaTag('viewport', 'width=device-width, initial-scale=1');
-          
+
       default:
         var template = HtmlService.createTemplateFromFile('Index');
         if (e && e.parameter) {
@@ -183,7 +186,7 @@ function doGet(e) {
         }
         return template.evaluate()
           .setTitle('CSR Management System')
-          .setFaviconUrl('https://www.google.com/favicon.ico')
+          .setFaviconUrl(faviconUrl)
           .addMetaTag('viewport', 'width=device-width, initial-scale=1')
           .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
     }
