@@ -5093,14 +5093,36 @@ function generateApprovalPDF(requestId, data) {
     doc.saveAndClose();
     insertPageNumbers_(docId, /*header*/false, /*rightAligned*/true);
 
-    // Export PDF, trash temp doc
-    const pdf = DriveApp.getFileById(docId).getAs('application/pdf');
-    DriveApp.getFileById(docId).setTrashed(true);
-    return pdf;
+    // Export PDF, save to Drive with proper name
+    const tempDoc = DriveApp.getFileById(docId);
+    const pdfBlob = tempDoc.getAs('application/pdf');
+    pdfBlob.setName("CSR_Approval_" + requestId + ".pdf");
+
+    // Save PDF to Drive (in root or specific folder)
+    const pdfFile = DriveApp.createFile(pdfBlob);
+    const pdfUrl = pdfFile.getUrl();
+    const pdfId = pdfFile.getId();
+
+    // Trash the temp Google Doc (but keep the PDF)
+    tempDoc.setTrashed(true);
+
+    Logger.log("PDF generated successfully: " + pdfUrl);
+
+    // Return expected object structure for calling code
+    return {
+      success: true,
+      pdfUrl: pdfUrl,
+      pdfId: pdfId,
+      format: "PDF"
+    };
 
   } catch (err) {
     Logger.log("PDF error: " + err + "\n" + err.stack);
-    throw err;
+    return {
+      success: false,
+      error: err.message || String(err),
+      pdfUrl: ""
+    };
   }
 }
 
