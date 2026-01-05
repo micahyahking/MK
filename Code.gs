@@ -5137,7 +5137,7 @@ function addElegantHeader_(doc, opt){
   const c1 = row.appendTableCell("");
   const c2 = row.appendTableCell("");
 
-  c1.setBorderWidth(0); c2.setBorderWidth(0);
+  // Note: setBorderWidth is set on table level (line 5134), cells don't have this method
 
   // Logo
   try {
