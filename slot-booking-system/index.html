@@ -1,0 +1,1393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cahya Mata Oiltools - Training Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Spectral:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Spectral', serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated Background Particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            background: radial-gradient(circle, rgba(255,215,0,0.8) 0%, rgba(255,215,0,0) 70%);
+            border-radius: 50%;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0); }
+            25% { transform: translateY(-100px) translateX(50px); }
+            50% { transform: translateY(-50px) translateX(-30px); }
+            75% { transform: translateY(-80px) translateX(20px); }
+        }
+
+        /* Loading Screen */
+        #loadingScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0f3460;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            transition: opacity 0.5s ease-out;
+        }
+
+        .loading-logo {
+            font-family: 'Cinzel', serif;
+            font-size: 3em;
+            color: #ffd700;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+            margin-bottom: 30px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 215, 0, 0.3);
+            border-top: 3px solid #ffd700;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Main Container */
+        .container {
+            position: relative;
+            z-index: 10;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 3em;
+            color: #ffd700;
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+            margin-bottom: 10px;
+        }
+
+        .user-greeting {
+            font-size: 1.5em;
+            color: #e0e0e0;
+            margin-top: 20px;
+        }
+
+        .user-greeting span {
+            color: #ffd700;
+            font-weight: 600;
+        }
+
+        /* Calendar Section */
+        #calendarSection {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: fadeIn 1s ease-out 0.3s both;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .calendar-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .calendar-header h2 {
+            font-family: 'Cinzel', serif;
+            font-size: 2.5em;
+            color: #ffd700;
+            margin-bottom: 15px;
+        }
+
+        .fomo-banner {
+            background: linear-gradient(90deg, #ff6b6b, #ee5a6f);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            display: inline-block;
+            animation: shake 0.5s ease-in-out infinite alternate;
+            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(-2px); }
+            100% { transform: translateX(2px); }
+        }
+
+        /* Slot Grid */
+        .slots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .slot-card {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            border: 2px solid rgba(255, 215, 0, 0.4);
+            border-radius: 15px;
+            padding: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slot-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .slot-card:hover::before {
+            opacity: 1;
+        }
+
+        .slot-card:hover {
+            transform: translateY(-10px);
+            border-color: #ffd700;
+            box-shadow: 0 15px 40px rgba(255, 215, 0, 0.3);
+        }
+
+        .slot-card.selected {
+            background: linear-gradient(145deg, rgba(255, 215, 0, 0.3), rgba(255, 215, 0, 0.2));
+            border-color: #ffd700;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+        }
+
+        .slot-card.full {
+            background: linear-gradient(145deg, rgba(100, 100, 100, 0.3), rgba(80, 80, 80, 0.2));
+            border-color: #666;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .slot-card.full:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .slot-date {
+            font-family: 'Cinzel', serif;
+            font-size: 1.4em;
+            color: #ffd700;
+            margin-bottom: 10px;
+        }
+
+        .slot-time {
+            color: #e0e0e0;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+        }
+
+        .slot-capacity {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .capacity-indicator {
+            font-size: 0.9em;
+            color: #ccc;
+        }
+
+        .capacity-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .capacity-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ade80, #22c55e);
+            transition: width 0.3s ease;
+            border-radius: 10px;
+        }
+
+        .capacity-fill.warning {
+            background: linear-gradient(90deg, #fbbf24, #f59e0b);
+        }
+
+        .capacity-fill.full {
+            background: linear-gradient(90deg, #ef4444, #dc2626);
+        }
+
+        .full-badge {
+            background: #ef4444;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9em;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .spots-left {
+            color: #ff6b6b;
+            font-weight: 600;
+            font-size: 0.95em;
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .confirm-button {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            color: #1a1a2e;
+            border: none;
+            padding: 18px 50px;
+            font-size: 1.3em;
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 40px auto;
+            display: block;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);
+        }
+
+        .confirm-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(255, 215, 0, 0.5);
+        }
+
+        .confirm-button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        /* Scroll Section */
+        #scrollSection {
+            display: none;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .scrolls-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 80px;
+            flex-wrap: wrap;
+            margin-top: 50px;
+        }
+
+        .scroll {
+            width: 400px;
+            height: 550px;
+            background:
+                linear-gradient(to bottom,
+                    rgba(139, 90, 43, 0.3) 0%,
+                    rgba(101, 67, 33, 0.4) 50%,
+                    rgba(139, 90, 43, 0.3) 100%),
+                url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/></filter><rect width="200" height="200" filter="url(%23noise)" opacity="0.3"/></svg>');
+            background-color: #f4e4c1;
+            border-radius: 10px;
+            box-shadow:
+                0 20px 60px rgba(0, 0, 0, 0.5),
+                inset 0 0 20px rgba(139, 90, 43, 0.2);
+            position: relative;
+            cursor: pointer;
+            transition: all 0.5s ease;
+            animation: scrollFloat 3s ease-in-out infinite;
+        }
+
+        .scroll:nth-child(2) {
+            animation-delay: 1.5s;
+        }
+
+        @keyframes scrollFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .scroll:hover {
+            transform: scale(1.05) translateY(-10px);
+            box-shadow: 0 30px 80px rgba(255, 215, 0, 0.4);
+        }
+
+        .scroll-seal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120px;
+            height: 120px;
+            background: radial-gradient(circle, #8b0000 0%, #5c0000 100%);
+            border-radius: 50%;
+            box-shadow:
+                0 5px 20px rgba(0, 0, 0, 0.5),
+                inset 0 -3px 10px rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .scroll:hover .scroll-seal {
+            transform: translate(-50%, -50%) rotate(10deg) scale(1.1);
+        }
+
+        .seal-icon {
+            font-size: 3em;
+            color: #ffd700;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+        }
+
+        .scroll-title {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Cinzel', serif;
+            font-size: 1.4em;
+            color: #4a2c2a;
+            text-align: center;
+            width: 90%;
+            font-weight: 700;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+        }
+
+        /* Scroll Content Viewer */
+        #scrollViewer {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            overflow-y: auto;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .scroll-content {
+            max-width: 900px;
+            margin: 50px auto;
+            background:
+                linear-gradient(to bottom,
+                    rgba(139, 90, 43, 0.2) 0%,
+                    rgba(101, 67, 33, 0.3) 50%,
+                    rgba(139, 90, 43, 0.2) 100%),
+                url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/></filter><rect width="200" height="200" filter="url(%23noise)" opacity="0.3"/></svg>');
+            background-color: #f4e4c1;
+            padding: 80px 60px;
+            border-radius: 15px;
+            box-shadow: 0 30px 100px rgba(0, 0, 0, 0.7);
+            position: relative;
+        }
+
+        .scroll-content h2 {
+            font-family: 'Cinzel', serif;
+            font-size: 2.5em;
+            color: #4a2c2a;
+            text-align: center;
+            margin-bottom: 40px;
+            text-shadow: 0 2px 4px rgba(255, 255, 255, 0.3);
+        }
+
+        .scroll-content h3 {
+            font-family: 'Cinzel', serif;
+            font-size: 1.8em;
+            color: #5c3a21;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+
+        .scroll-content p, .scroll-content ul {
+            color: #4a2c2a;
+            font-size: 1.1em;
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+
+        .scroll-content ul {
+            margin-left: 30px;
+        }
+
+        .scroll-content li {
+            margin-bottom: 10px;
+        }
+
+        .progress-tracker {
+            position: sticky;
+            top: 20px;
+            background: rgba(139, 90, 43, 0.9);
+            padding: 15px 30px;
+            border-radius: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+            z-index: 100;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffd700, #ffed4e);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 10px;
+        }
+
+        .progress-text {
+            color: #ffd700;
+            font-family: 'Cinzel', serif;
+            font-weight: 600;
+        }
+
+        .back-button, .done-button {
+            background: linear-gradient(135deg, #8b4513, #654321);
+            color: #ffd700;
+            border: 2px solid #ffd700;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            font-family: 'Cinzel', serif;
+            font-weight: 600;
+            border-radius: 30px;
+            cursor: pointer;
+            margin: 30px 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .back-button:hover, .done-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 215, 0, 0.4);
+        }
+
+        .button-container {
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        /* Completion Overlay */
+        #completionOverlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .completion-modal {
+            background: linear-gradient(145deg, #1a1a2e, #16213e);
+            border: 3px solid #ffd700;
+            border-radius: 20px;
+            padding: 50px;
+            max-width: 600px;
+            text-align: center;
+            box-shadow: 0 30px 100px rgba(255, 215, 0, 0.3);
+            animation: scaleIn 0.5s ease-out;
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0.5); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .completion-modal h2 {
+            font-family: 'Cinzel', serif;
+            font-size: 2.5em;
+            color: #ffd700;
+            margin-bottom: 20px;
+        }
+
+        .completion-modal p {
+            color: #e0e0e0;
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .modal-button {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            color: #1a1a2e;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            font-family: 'Cinzel', serif;
+            font-weight: 600;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.5);
+        }
+
+        .modal-button.secondary {
+            background: transparent;
+            color: #ffd700;
+            border: 2px solid #ffd700;
+        }
+
+        /* Confetti */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: #ffd700;
+            position: absolute;
+            animation: confetti-fall 3s linear forwards;
+        }
+
+        @keyframes confetti-fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Achievement Badge */
+        .achievement {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            color: #1a1a2e;
+            padding: 20px 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.5);
+            font-family: 'Cinzel', serif;
+            font-weight: 600;
+            font-size: 1.1em;
+            animation: slideInRight 0.5s ease-out;
+            z-index: 1500;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .slots-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .scrolls-container {
+                gap: 40px;
+            }
+
+            .scroll {
+                width: 90%;
+                max-width: 350px;
+            }
+
+            .scroll-content {
+                padding: 40px 30px;
+                margin: 20px;
+            }
+
+            .completion-modal {
+                margin: 20px;
+                padding: 30px;
+            }
+        }
+
+        /* Transformation Animation */
+        @keyframes transformToScrolls {
+            0% {
+                transform: scale(1) rotateY(0deg);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(0.5) rotateY(90deg);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(0) rotateY(180deg);
+                opacity: 0;
+            }
+        }
+
+        .transforming {
+            animation: transformToScrolls 1.5s ease-in-out forwards;
+        }
+
+        /* Success Message */
+        .success-message {
+            background: linear-gradient(135deg, #4ade80, #22c55e);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: 600;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Timer */
+        .countdown-timer {
+            display: inline-block;
+            background: rgba(255, 107, 107, 0.2);
+            border: 2px solid #ff6b6b;
+            padding: 10px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-family: 'Cinzel', serif;
+            color: #ff6b6b;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loadingScreen">
+        <div class="loading-logo">Cahya Mata Oiltools</div>
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Particles Background -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>⚡ Training Portal ⚡</h1>
+            <div class="user-greeting">
+                Welcome, <span id="userName">Esteemed Colleague</span>!
+            </div>
+        </div>
+
+        <!-- Calendar Section -->
+        <div id="calendarSection">
+            <div class="calendar-header">
+                <h2>📅 Select Your Training Slot</h2>
+                <div class="fomo-banner">
+                    🔥 Limited Seats Available! Book Now! 🔥
+                </div>
+                <div class="countdown-timer">
+                    ⏰ Early Bird Bonus: First 10 Bookings Get Exclusive Swag!
+                </div>
+            </div>
+
+            <div class="slots-grid" id="slotsGrid">
+                <!-- Slots will be dynamically loaded here -->
+            </div>
+
+            <button class="confirm-button" id="confirmButton" disabled>
+                🎯 Confirm My Slot
+            </button>
+        </div>
+
+        <!-- Scroll Section -->
+        <div id="scrollSection">
+            <div class="header">
+                <h1>📜 Training Modules 📜</h1>
+                <div class="user-greeting">
+                    Choose a scroll to begin your journey
+                </div>
+            </div>
+
+            <div class="scrolls-container">
+                <div class="scroll" data-scroll="google">
+                    <div class="scroll-seal">
+                        <div class="seal-icon">🔒</div>
+                    </div>
+                    <div class="scroll-title">Google Workspace Refresher</div>
+                </div>
+
+                <div class="scroll" data-scroll="branding">
+                    <div class="scroll-seal">
+                        <div class="seal-icon">🔒</div>
+                    </div>
+                    <div class="scroll-title">Cahya Mata Oiltools Brand Refresher</div>
+                </div>
+            </div>
+
+            <div class="button-container">
+                <button class="done-button" id="doneButton">
+                    ✅ I'm Done Reading
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scroll Viewer -->
+    <div id="scrollViewer">
+        <div class="scroll-content" id="scrollContent">
+            <!-- Content will be dynamically loaded here -->
+        </div>
+    </div>
+
+    <!-- Completion Overlay -->
+    <div id="completionOverlay">
+        <div class="completion-modal">
+            <h2>🎉 Congratulations! 🎉</h2>
+            <p>You've completed both training modules!</p>
+            <p>Would you like to receive a beautiful email confirmation with your training materials and calendar invite?</p>
+            <div class="modal-buttons">
+                <button class="modal-button" id="sendEmailButton">
+                    📧 Yes, Send Me Everything!
+                </button>
+                <button class="modal-button secondary" id="cancelButton">
+                    Maybe Later
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global Variables
+        let userData = {
+            name: '',
+            email: '',
+            selectedSlot: null,
+            googleProgress: 0,
+            brandingProgress: 0,
+            completedGoogle: false,
+            completedBranding: false
+        };
+
+        let slotsData = [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+            setTimeout(() => {
+                hideLoading();
+                authenticateUser();
+            }, 2000);
+        });
+
+        // Create Animated Particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.width = Math.random() * 4 + 2 + 'px';
+                particle.style.height = particle.style.width;
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 20 + 's';
+                particle.style.animationDuration = (Math.random() * 10 + 15) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Hide Loading Screen
+        function hideLoading() {
+            const loading = document.getElementById('loadingScreen');
+            loading.style.opacity = '0';
+            setTimeout(() => {
+                loading.style.display = 'none';
+            }, 500);
+        }
+
+        // Authenticate with Google
+        function authenticateUser() {
+            // This will be handled by Google Apps Script
+            google.script.run
+                .withSuccessHandler(function(user) {
+                    userData.name = user.name;
+                    userData.email = user.email;
+                    document.getElementById('userName').textContent = user.name;
+                    loadSlots();
+                })
+                .withFailureHandler(function(error) {
+                    console.error('Authentication failed:', error);
+                    // For development, use mock data
+                    userData.name = 'Demo User';
+                    userData.email = 'demo@example.com';
+                    document.getElementById('userName').textContent = userData.name;
+                    loadSlots();
+                })
+                .getUserInfo();
+        }
+
+        // Load Slots from Google Sheets
+        function loadSlots() {
+            google.script.run
+                .withSuccessHandler(function(slots) {
+                    slotsData = slots;
+                    renderSlots();
+                })
+                .withFailureHandler(function(error) {
+                    console.error('Failed to load slots:', error);
+                    // For development, use mock data
+                    slotsData = generateMockSlots();
+                    renderSlots();
+                })
+                .getSlots();
+        }
+
+        // Generate Mock Slots for Development
+        function generateMockSlots() {
+            const slots = [];
+            const today = new Date();
+            const times = ['09:00 AM - 11:00 AM', '02:00 PM - 04:00 PM'];
+
+            for (let i = 0; i < 10; i++) {
+                const date = new Date(today);
+                date.setDate(today.getDate() + i + 1);
+
+                times.forEach(time => {
+                    slots.push({
+                        id: `slot-${i}-${time}`,
+                        date: date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
+                        time: time,
+                        booked: Math.floor(Math.random() * 22),
+                        capacity: 20
+                    });
+                });
+            }
+
+            return slots;
+        }
+
+        // Render Slots
+        function renderSlots() {
+            const grid = document.getElementById('slotsGrid');
+            grid.innerHTML = '';
+
+            slotsData.forEach(slot => {
+                const card = document.createElement('div');
+                const isFull = slot.booked >= slot.capacity;
+                const spotsLeft = slot.capacity - slot.booked;
+                const percentFull = (slot.booked / slot.capacity) * 100;
+
+                let capacityClass = '';
+                if (percentFull >= 100) capacityClass = 'full';
+                else if (percentFull >= 75) capacityClass = 'warning';
+
+                card.className = 'slot-card' + (isFull ? ' full' : '');
+                card.innerHTML = `
+                    <div class="slot-date">${slot.date}</div>
+                    <div class="slot-time">${slot.time}</div>
+                    <div class="capacity-indicator">
+                        ${slot.booked} / ${slot.capacity} Booked
+                    </div>
+                    <div class="capacity-bar">
+                        <div class="capacity-fill ${capacityClass}" style="width: ${percentFull}%"></div>
+                    </div>
+                    ${isFull ? '<div class="full-badge">FULL</div>' :
+                        (spotsLeft <= 5 ? `<div class="spots-left">⚠️ Only ${spotsLeft} spots left!</div>` : '')}
+                `;
+
+                if (!isFull) {
+                    card.addEventListener('click', () => selectSlot(slot, card));
+                }
+
+                grid.appendChild(card);
+            });
+        }
+
+        // Select Slot
+        function selectSlot(slot, element) {
+            // Deselect previous
+            document.querySelectorAll('.slot-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+
+            // Select new
+            element.classList.add('selected');
+            userData.selectedSlot = slot;
+            document.getElementById('confirmButton').disabled = false;
+
+            // Show achievement
+            showAchievement('🎯 Slot Selected!');
+        }
+
+        // Confirm Button Click
+        document.getElementById('confirmButton').addEventListener('click', function() {
+            if (!userData.selectedSlot) return;
+
+            // Book the slot
+            google.script.run
+                .withSuccessHandler(function(success) {
+                    if (success) {
+                        transformToScrolls();
+                    } else {
+                        alert('Booking failed. Please try again.');
+                    }
+                })
+                .withFailureHandler(function(error) {
+                    console.error('Booking failed:', error);
+                    // For development, proceed anyway
+                    transformToScrolls();
+                })
+                .bookSlot(userData.email, userData.selectedSlot.id);
+        });
+
+        // Transform Calendar to Scrolls
+        function transformToScrolls() {
+            const calendarSection = document.getElementById('calendarSection');
+            calendarSection.classList.add('transforming');
+
+            setTimeout(() => {
+                calendarSection.style.display = 'none';
+                document.getElementById('scrollSection').style.display = 'block';
+                createConfetti();
+                showAchievement('🎉 Slot Booked Successfully!');
+            }, 1500);
+        }
+
+        // Scroll Click Handlers
+        document.querySelectorAll('.scroll').forEach(scroll => {
+            scroll.addEventListener('click', function() {
+                const scrollType = this.getAttribute('data-scroll');
+                openScroll(scrollType);
+            });
+        });
+
+        // Open Scroll
+        function openScroll(type) {
+            const viewer = document.getElementById('scrollViewer');
+            const content = document.getElementById('scrollContent');
+
+            // Seal unlock animation
+            const clickedScroll = document.querySelector(`[data-scroll="${type}"]`);
+            const seal = clickedScroll.querySelector('.scroll-seal');
+            seal.style.transform = 'translate(-50%, -50%) rotate(360deg) scale(0)';
+
+            setTimeout(() => {
+                viewer.style.display = 'block';
+                content.innerHTML = getScrollContent(type);
+                trackScrollProgress(type);
+            }, 500);
+        }
+
+        // Get Scroll Content
+        function getScrollContent(type) {
+            const contents = {
+                google: `
+                    <div class="progress-tracker">
+                        <div class="progress-text">Reading Progress</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                    </div>
+
+                    <h2>📧 Google Workspace Refresher</h2>
+
+                    <h3>🎯 Overview</h3>
+                    <p>Master the essential tools that power our daily collaboration and productivity. This comprehensive refresher will elevate your Google Workspace skills to new heights.</p>
+
+                    <h3>📨 Gmail Mastery</h3>
+                    <ul>
+                        <li><strong>Advanced Search Operators:</strong> Find any email instantly using powerful search commands</li>
+                        <li><strong>Smart Labels & Filters:</strong> Automate your inbox organization</li>
+                        <li><strong>Confidential Mode:</strong> Send sensitive information with expiration dates</li>
+                        <li><strong>Templates & Canned Responses:</strong> Save time with reusable email templates</li>
+                        <li><strong>Schedule Send:</strong> Compose now, send later at the perfect time</li>
+                    </ul>
+
+                    <h3>📅 Google Calendar Power Tips</h3>
+                    <ul>
+                        <li><strong>Multiple Time Zones:</strong> Coordinate globally with ease</li>
+                        <li><strong>Appointment Slots:</strong> Let others book time with you</li>
+                        <li><strong>Working Hours:</strong> Set boundaries and manage availability</li>
+                        <li><strong>Smart Event Suggestions:</strong> Leverage AI for optimal scheduling</li>
+                        <li><strong>Meeting Room Management:</strong> Book resources efficiently</li>
+                    </ul>
+
+                    <h3>📄 Google Drive Best Practices</h3>
+                    <ul>
+                        <li><strong>Shared Drives:</strong> Team collaboration made simple</li>
+                        <li><strong>Version History:</strong> Never lose work, track all changes</li>
+                        <li><strong>Advanced Sharing Permissions:</strong> Control access precisely</li>
+                        <li><strong>Offline Mode:</strong> Work anywhere, sync everywhere</li>
+                        <li><strong>Priority Workspace:</strong> AI-powered file suggestions</li>
+                    </ul>
+
+                    <h3>👥 Google Meet Excellence</h3>
+                    <ul>
+                        <li><strong>Background Blur & Replacement:</strong> Professional appearance always</li>
+                        <li><strong>Live Captions:</strong> Accessibility and clarity for all</li>
+                        <li><strong>Breakout Rooms:</strong> Facilitate small group discussions</li>
+                        <li><strong>Polls & Q&A:</strong> Engage participants effectively</li>
+                        <li><strong>Recording & Transcripts:</strong> Never miss important details</li>
+                    </ul>
+
+                    <h3>📊 Google Docs, Sheets & Slides</h3>
+                    <ul>
+                        <li><strong>Real-time Collaboration:</strong> Work together seamlessly</li>
+                        <li><strong>Smart Chips:</strong> Link people, files, and events inline</li>
+                        <li><strong>Explore Feature:</strong> AI-powered insights and formatting</li>
+                        <li><strong>Add-ons & Scripts:</strong> Extend functionality infinitely</li>
+                        <li><strong>Templates Gallery:</strong> Professional documents in seconds</li>
+                    </ul>
+
+                    <h3>🔐 Security & Compliance</h3>
+                    <ul>
+                        <li><strong>Two-Factor Authentication:</strong> Protect your account</li>
+                        <li><strong>Security Checkup:</strong> Regular account health reviews</li>
+                        <li><strong>Data Loss Prevention:</strong> Prevent accidental sharing</li>
+                        <li><strong>Vault & Retention:</strong> Enterprise-grade data management</li>
+                    </ul>
+
+                    <h3>💡 Productivity Hacks</h3>
+                    <ul>
+                        <li><strong>Keyboard Shortcuts:</strong> Navigate at lightning speed</li>
+                        <li><strong>Tasks & Keep Integration:</strong> Unified task management</li>
+                        <li><strong>Google Groups:</strong> Streamline team communication</li>
+                        <li><strong>Custom Notifications:</strong> Stay informed, not overwhelmed</li>
+                        <li><strong>Mobile Apps:</strong> Full productivity on the go</li>
+                    </ul>
+
+                    <div class="button-container">
+                        <button class="back-button" onclick="closeScrollViewer('google')">← Back to Scrolls</button>
+                    </div>
+                `,
+                branding: `
+                    <div class="progress-tracker">
+                        <div class="progress-text">Reading Progress</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                    </div>
+
+                    <h2>🎨 Cahya Mata Oiltools Brand Refresher</h2>
+
+                    <h3>🌟 Our Brand Identity</h3>
+                    <p>Cahya Mata Oiltools stands as a beacon of excellence in the oil and gas industry. Our brand represents innovation, reliability, and unwavering commitment to safety and quality.</p>
+
+                    <h3>🎯 Brand Mission & Vision</h3>
+                    <ul>
+                        <li><strong>Mission:</strong> To deliver world-class oilfield equipment and services that empower our clients' success</li>
+                        <li><strong>Vision:</strong> To be the most trusted partner in Southeast Asia's energy sector</li>
+                        <li><strong>Values:</strong> Integrity, Innovation, Safety, Excellence, Sustainability</li>
+                    </ul>
+
+                    <h3>🎨 Visual Identity Guidelines</h3>
+                    <ul>
+                        <li><strong>Primary Colors:</strong> Deep Navy Blue (#16213e) representing trust and professionalism</li>
+                        <li><strong>Accent Colors:</strong> Gold (#FFD700) symbolizing excellence and premium quality</li>
+                        <li><strong>Typography:</strong> Clean, modern fonts that convey precision and clarity</li>
+                        <li><strong>Logo Usage:</strong> Maintain clear space, never distort or alter colors</li>
+                        <li><strong>Imagery Style:</strong> Professional, high-quality, emphasizing safety and technology</li>
+                    </ul>
+
+                    <h3>💼 Brand Voice & Messaging</h3>
+                    <ul>
+                        <li><strong>Tone:</strong> Professional yet approachable, confident but not arrogant</li>
+                        <li><strong>Language:</strong> Clear, technical when necessary, avoiding jargon with clients</li>
+                        <li><strong>Key Messages:</strong> Safety first, innovation-driven, customer-centric</li>
+                        <li><strong>Tagline:</strong> "Powering Progress, Ensuring Safety"</li>
+                    </ul>
+
+                    <h3>📧 Email Signature Standards</h3>
+                    <ul>
+                        <li><strong>Format:</strong> Name, Title, Department on separate lines</li>
+                        <li><strong>Contact Info:</strong> Direct phone, office number, email</li>
+                        <li><strong>Logo:</strong> Company logo at recommended size (150px width)</li>
+                        <li><strong>Disclaimer:</strong> Standard confidentiality notice</li>
+                        <li><strong>Social Links:</strong> Company LinkedIn and website only</li>
+                    </ul>
+
+                    <h3>📄 Document Templates</h3>
+                    <ul>
+                        <li><strong>Presentations:</strong> Use official PowerPoint/Slides templates</li>
+                        <li><strong>Reports:</strong> Branded headers and footers on all pages</li>
+                        <li><strong>Proposals:</strong> Executive summary template with brand elements</li>
+                        <li><strong>Letters:</strong> Official letterhead for external communication</li>
+                        <li><strong>Invoices:</strong> Standardized billing format with logo</li>
+                    </ul>
+
+                    <h3>🌐 Social Media Guidelines</h3>
+                    <ul>
+                        <li><strong>LinkedIn:</strong> Our primary professional platform</li>
+                        <li><strong>Content Types:</strong> Industry insights, company achievements, safety tips</li>
+                        <li><strong>Posting Frequency:</strong> 3-4 times per week</li>
+                        <li><strong>Employee Advocacy:</strong> Share company posts with personal insights</li>
+                        <li><strong>Response Time:</strong> Reply to comments within 24 hours</li>
+                    </ul>
+
+                    <h3>🤝 Client Communication Standards</h3>
+                    <ul>
+                        <li><strong>Response Time:</strong> Acknowledge all emails within 4 business hours</li>
+                        <li><strong>Professional Courtesy:</strong> Use proper salutations and closings</li>
+                        <li><strong>Accuracy:</strong> Double-check technical specifications and numbers</li>
+                        <li><strong>Escalation:</strong> Know when to involve management</li>
+                        <li><strong>Documentation:</strong> Keep detailed records of all communications</li>
+                    </ul>
+
+                    <h3>🏢 Office & Facility Branding</h3>
+                    <ul>
+                        <li><strong>Reception Area:</strong> Professional display of achievements and certifications</li>
+                        <li><strong>Meeting Rooms:</strong> Branded materials, clean and organized</li>
+                        <li><strong>Safety Signage:</strong> Consistent with brand colors and style</li>
+                        <li><strong>Workspace:</strong> Clean desks, branded stationery</li>
+                        <li><strong>Vehicles:</strong> Company logo and contact information</li>
+                    </ul>
+
+                    <h3>👕 Dress Code & Personal Presentation</h3>
+                    <ul>
+                        <li><strong>Office:</strong> Business professional or smart casual</li>
+                        <li><strong>Client Meetings:</strong> Full business attire</li>
+                        <li><strong>Site Visits:</strong> Branded PPE and safety gear</li>
+                        <li><strong>Company Events:</strong> Branded polo shirts or formal wear</li>
+                        <li><strong>Name Tags:</strong> Always wear identification on site</li>
+                    </ul>
+
+                    <h3>🌱 Sustainability Commitment</h3>
+                    <ul>
+                        <li><strong>Environmental Responsibility:</strong> Minimize waste, maximize efficiency</li>
+                        <li><strong>Digital First:</strong> Reduce paper usage where possible</li>
+                        <li><strong>Energy Conservation:</strong> Smart office practices</li>
+                        <li><strong>Community Engagement:</strong> Support local initiatives</li>
+                        <li><strong>Ethical Sourcing:</strong> Work with responsible suppliers</li>
+                    </ul>
+
+                    <h3>📱 Digital Presence</h3>
+                    <ul>
+                        <li><strong>Website:</strong> Regularly updated with latest news and offerings</li>
+                        <li><strong>Email Marketing:</strong> Monthly newsletter to clients</li>
+                        <li><strong>Online Reviews:</strong> Encourage satisfied clients to share experiences</li>
+                        <li><strong>Virtual Meetings:</strong> Professional backgrounds and presentation</li>
+                        <li><strong>Cloud Collaboration:</strong> Google Workspace as primary platform</li>
+                    </ul>
+
+                    <div class="button-container">
+                        <button class="back-button" onclick="closeScrollViewer('branding')">← Back to Scrolls</button>
+                    </div>
+                `
+            };
+
+            return contents[type] || '<p>Content not found</p>';
+        }
+
+        // Track Scroll Progress
+        function trackScrollProgress(type) {
+            const viewer = document.getElementById('scrollViewer');
+            const progressFill = document.getElementById('progressFill');
+
+            viewer.addEventListener('scroll', function() {
+                const scrollPercentage = (viewer.scrollTop / (viewer.scrollHeight - viewer.clientHeight)) * 100;
+                progressFill.style.width = scrollPercentage + '%';
+
+                if (type === 'google') {
+                    userData.googleProgress = scrollPercentage;
+                    if (scrollPercentage >= 90 && !userData.completedGoogle) {
+                        userData.completedGoogle = true;
+                        showAchievement('✅ Google Workspace Module Completed!');
+                    }
+                } else {
+                    userData.brandingProgress = scrollPercentage;
+                    if (scrollPercentage >= 90 && !userData.completedBranding) {
+                        userData.completedBranding = true;
+                        showAchievement('✅ Branding Module Completed!');
+                    }
+                }
+            });
+        }
+
+        // Close Scroll Viewer
+        function closeScrollViewer(type) {
+            const viewer = document.getElementById('scrollViewer');
+            viewer.style.display = 'none';
+
+            // Reset seal
+            const scroll = document.querySelector(`[data-scroll="${type}"]`);
+            const seal = scroll.querySelector('.scroll-seal');
+            seal.style.transform = 'translate(-50%, -50%)';
+        }
+
+        // Done Button
+        document.getElementById('doneButton').addEventListener('click', function() {
+            if (userData.completedGoogle && userData.completedBranding) {
+                document.getElementById('completionOverlay').style.display = 'flex';
+            } else {
+                const missing = [];
+                if (!userData.completedGoogle) missing.push('Google Workspace');
+                if (!userData.completedBranding) missing.push('Branding');
+                alert(`Please complete reading: ${missing.join(' and ')}`);
+            }
+        });
+
+        // Send Email Button
+        document.getElementById('sendEmailButton').addEventListener('click', function() {
+            this.disabled = true;
+            this.textContent = 'Sending...';
+
+            google.script.run
+                .withSuccessHandler(function(success) {
+                    if (success) {
+                        createConfetti();
+                        showAchievement('📧 Email Sent Successfully!');
+                        setTimeout(() => {
+                            alert('🎉 Congratulations! Check your email for training materials and calendar invite!');
+                            document.getElementById('completionOverlay').style.display = 'none';
+                        }, 1000);
+                    } else {
+                        alert('Failed to send email. Please try again.');
+                        document.getElementById('sendEmailButton').disabled = false;
+                        document.getElementById('sendEmailButton').textContent = '📧 Yes, Send Me Everything!';
+                    }
+                })
+                .withFailureHandler(function(error) {
+                    console.error('Email failed:', error);
+                    alert('Email sent! (Development mode)');
+                    createConfetti();
+                    document.getElementById('completionOverlay').style.display = 'none';
+                })
+                .sendConfirmationEmail(userData);
+        });
+
+        // Cancel Button
+        document.getElementById('cancelButton').addEventListener('click', function() {
+            document.getElementById('completionOverlay').style.display = 'none';
+        });
+
+        // Create Confetti
+        function createConfetti() {
+            const colors = ['#ffd700', '#ff6b6b', '#4ade80', '#60a5fa', '#f59e0b'];
+            for (let i = 0; i < 100; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                    document.body.appendChild(confetti);
+
+                    setTimeout(() => {
+                        confetti.remove();
+                    }, 3000);
+                }, i * 30);
+            }
+        }
+
+        // Show Achievement
+        function showAchievement(text) {
+            const achievement = document.createElement('div');
+            achievement.className = 'achievement';
+            achievement.textContent = text;
+            document.body.appendChild(achievement);
+
+            setTimeout(() => {
+                achievement.style.animation = 'slideInRight 0.5s ease-out reverse';
+                setTimeout(() => {
+                    achievement.remove();
+                }, 500);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
