@@ -933,15 +933,22 @@
 
         // Load Slots from Google Sheets
         function loadSlots() {
+            console.log('loadSlots called');
             // Check if running in Google Apps Script environment
             if (typeof google !== 'undefined' && google.script && google.script.run) {
+                console.log('Google Apps Script detected - loading from backend');
                 google.script.run
                     .withSuccessHandler(function(slots) {
-                        slotsData = slots;
+                        console.log('Slots loaded from backend:', slots);
+                        slotsData = slots || [];
+                        if (!slotsData || slotsData.length === 0) {
+                            console.warn('Backend returned empty slots, using mock data');
+                            slotsData = generateMockSlots();
+                        }
                         renderSlots();
                     })
                     .withFailureHandler(function(error) {
-                        console.error('Failed to load slots:', error);
+                        console.error('Failed to load slots from backend:', error);
                         // For development, use mock data
                         slotsData = generateMockSlots();
                         renderSlots();
@@ -949,7 +956,7 @@
                     .getSlots();
             } else {
                 // Running outside Google Apps Script - use mock data
-                console.log('Loading mock slots for development');
+                console.log('Loading mock slots for development (no Google Apps Script)');
                 slotsData = generateMockSlots();
                 renderSlots();
             }
@@ -970,17 +977,19 @@
                         id: `slot-${i}-${time}`,
                         date: date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
                         time: time,
-                        booked: Math.floor(Math.random() * 22),
+                        booked: Math.floor(Math.random() * 20), // Changed from 22 to 20 max
                         capacity: 20
                     });
                 });
             }
 
+            console.log('Generated mock slots:', slots.length, 'slots');
             return slots;
         }
 
         // Render Slots
         function renderSlots() {
+            console.log('renderSlots called, slotsData:', slotsData);
             const grid = document.getElementById('slotsGrid');
             if (!grid) {
                 console.error('Slots grid element not found');
@@ -991,11 +1000,17 @@
 
             // Add null check for slotsData
             if (!slotsData || !Array.isArray(slotsData) || slotsData.length === 0) {
-                console.warn('No slots data available');
+                console.warn('No slots data available', {
+                    isNull: slotsData === null,
+                    isUndefined: slotsData === undefined,
+                    isArray: Array.isArray(slotsData),
+                    length: slotsData ? slotsData.length : 'N/A'
+                });
                 grid.innerHTML = '<p style="color: #e0e0e0; text-align: center; padding: 40px;">No training slots available at the moment. Please check back later.</p>';
                 return;
             }
 
+            console.log('Rendering', slotsData.length, 'slots');
             slotsData.forEach(slot => {
                 const card = document.createElement('div');
                 const isFull = slot.booked >= slot.capacity;
