@@ -902,39 +902,57 @@
 
         // Authenticate with Google
         function authenticateUser() {
-            // This will be handled by Google Apps Script
-            google.script.run
-                .withSuccessHandler(function(user) {
-                    userData.name = user.name;
-                    userData.email = user.email;
-                    document.getElementById('userName').textContent = user.name;
-                    loadSlots();
-                })
-                .withFailureHandler(function(error) {
-                    console.error('Authentication failed:', error);
-                    // For development, use mock data
-                    userData.name = 'Demo User';
-                    userData.email = 'demo@example.com';
-                    document.getElementById('userName').textContent = userData.name;
-                    loadSlots();
-                })
-                .getUserInfo();
+            // Check if running in Google Apps Script environment
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+                // This will be handled by Google Apps Script
+                google.script.run
+                    .withSuccessHandler(function(user) {
+                        userData.name = user.name;
+                        userData.email = user.email;
+                        document.getElementById('userName').textContent = user.name;
+                        loadSlots();
+                    })
+                    .withFailureHandler(function(error) {
+                        console.error('Authentication failed:', error);
+                        // For development, use mock data
+                        userData.name = 'Demo User';
+                        userData.email = 'demo@example.com';
+                        document.getElementById('userName').textContent = userData.name;
+                        loadSlots();
+                    })
+                    .getUserInfo();
+            } else {
+                // Running outside Google Apps Script - use mock data
+                console.log('Running in development mode with mock data');
+                userData.name = 'Demo User';
+                userData.email = 'demo@example.com';
+                document.getElementById('userName').textContent = userData.name;
+                loadSlots();
+            }
         }
 
         // Load Slots from Google Sheets
         function loadSlots() {
-            google.script.run
-                .withSuccessHandler(function(slots) {
-                    slotsData = slots;
-                    renderSlots();
-                })
-                .withFailureHandler(function(error) {
-                    console.error('Failed to load slots:', error);
-                    // For development, use mock data
-                    slotsData = generateMockSlots();
-                    renderSlots();
-                })
-                .getSlots();
+            // Check if running in Google Apps Script environment
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+                google.script.run
+                    .withSuccessHandler(function(slots) {
+                        slotsData = slots;
+                        renderSlots();
+                    })
+                    .withFailureHandler(function(error) {
+                        console.error('Failed to load slots:', error);
+                        // For development, use mock data
+                        slotsData = generateMockSlots();
+                        renderSlots();
+                    })
+                    .getSlots();
+            } else {
+                // Running outside Google Apps Script - use mock data
+                console.log('Loading mock slots for development');
+                slotsData = generateMockSlots();
+                renderSlots();
+            }
         }
 
         // Generate Mock Slots for Development
@@ -964,7 +982,19 @@
         // Render Slots
         function renderSlots() {
             const grid = document.getElementById('slotsGrid');
+            if (!grid) {
+                console.error('Slots grid element not found');
+                return;
+            }
+
             grid.innerHTML = '';
+
+            // Add null check for slotsData
+            if (!slotsData || !Array.isArray(slotsData) || slotsData.length === 0) {
+                console.warn('No slots data available');
+                grid.innerHTML = '<p style="color: #e0e0e0; text-align: center; padding: 40px;">No training slots available at the moment. Please check back later.</p>';
+                return;
+            }
 
             slotsData.forEach(slot => {
                 const card = document.createElement('div');
@@ -1018,21 +1048,28 @@
         document.getElementById('confirmButton').addEventListener('click', function() {
             if (!userData.selectedSlot) return;
 
-            // Book the slot
-            google.script.run
-                .withSuccessHandler(function(success) {
-                    if (success) {
+            // Check if running in Google Apps Script environment
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+                // Book the slot via Google Apps Script
+                google.script.run
+                    .withSuccessHandler(function(success) {
+                        if (success) {
+                            transformToScrolls();
+                        } else {
+                            alert('Booking failed. Please try again.');
+                        }
+                    })
+                    .withFailureHandler(function(error) {
+                        console.error('Booking failed:', error);
+                        // For development, proceed anyway
                         transformToScrolls();
-                    } else {
-                        alert('Booking failed. Please try again.');
-                    }
-                })
-                .withFailureHandler(function(error) {
-                    console.error('Booking failed:', error);
-                    // For development, proceed anyway
-                    transformToScrolls();
-                })
-                .bookSlot(userData.email, userData.selectedSlot.id);
+                    })
+                    .bookSlot(userData.email, userData.selectedSlot.id);
+            } else {
+                // Running outside Google Apps Script - proceed with demo
+                console.log('Demo mode: Proceeding to scrolls without booking');
+                transformToScrolls();
+            }
         });
 
         // Transform Calendar to Scrolls
@@ -1326,28 +1363,40 @@
             this.disabled = true;
             this.textContent = 'Sending...';
 
-            google.script.run
-                .withSuccessHandler(function(success) {
-                    if (success) {
+            // Check if running in Google Apps Script environment
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+                google.script.run
+                    .withSuccessHandler(function(success) {
+                        if (success) {
+                            createConfetti();
+                            showAchievement('📧 Email Sent Successfully!');
+                            setTimeout(() => {
+                                alert('🎉 Congratulations! Check your email for training materials and calendar invite!');
+                                document.getElementById('completionOverlay').style.display = 'none';
+                            }, 1000);
+                        } else {
+                            alert('Failed to send email. Please try again.');
+                            document.getElementById('sendEmailButton').disabled = false;
+                            document.getElementById('sendEmailButton').textContent = '📧 Yes, Send Me Everything!';
+                        }
+                    })
+                    .withFailureHandler(function(error) {
+                        console.error('Email failed:', error);
+                        alert('Email sent! (Development mode)');
                         createConfetti();
-                        showAchievement('📧 Email Sent Successfully!');
-                        setTimeout(() => {
-                            alert('🎉 Congratulations! Check your email for training materials and calendar invite!');
-                            document.getElementById('completionOverlay').style.display = 'none';
-                        }, 1000);
-                    } else {
-                        alert('Failed to send email. Please try again.');
-                        document.getElementById('sendEmailButton').disabled = false;
-                        document.getElementById('sendEmailButton').textContent = '📧 Yes, Send Me Everything!';
-                    }
-                })
-                .withFailureHandler(function(error) {
-                    console.error('Email failed:', error);
-                    alert('Email sent! (Development mode)');
-                    createConfetti();
+                        document.getElementById('completionOverlay').style.display = 'none';
+                    })
+                    .sendConfirmationEmail(userData);
+            } else {
+                // Running outside Google Apps Script - demo mode
+                console.log('Demo mode: Simulating email send');
+                createConfetti();
+                showAchievement('📧 Email Sent Successfully! (Demo)');
+                setTimeout(() => {
+                    alert('🎉 Demo Complete! In production, you would receive an email with training materials and calendar invite.');
                     document.getElementById('completionOverlay').style.display = 'none';
-                })
-                .sendConfirmationEmail(userData);
+                }, 1000);
+            }
         });
 
         // Cancel Button
